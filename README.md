@@ -106,13 +106,42 @@ The application uses several advanced rendering techniques:
 4. **Ambient Occlusion**: Simulates how light is occluded by nearby surfaces, adding realism and depth
 5. **Quaternion Mathematics**: 4D extension of complex numbers, enabling the generation of four-dimensional fractals
 
-## Getting Started
+## Installation & Setup
 
-Simply open the index.html file in a modern web browser that supports WebGL. No installation required!
+No complex installation process is required! Simply follow these steps:
 
-### Requirements
-- Modern web browser with WebGL support (Chrome, Firefox, Edge, Safari)
-- Graphics card with decent 3D performance
+1. **Clone or download the repository**
+   ```
+   git clone https://github.com/your-username/quaternion-julia-fractal-explorer.git
+   ```
+   Or download and extract the ZIP file
+
+2. **Local server setup (optional but recommended)**
+   - For best performance and to avoid CORS issues, serve the files using a local web server
+   - If you have Python installed:
+     ```
+     # Python 3
+     python -m http.server
+     
+     # Python 2
+     python -m SimpleHTTPServer
+     ```
+   - Or use any other local development server (Node.js http-server, PHP built-in server, etc.)
+
+3. **Open in browser**
+   - If using a local server, navigate to `http://localhost:8000` (or the port your server uses)
+   - Alternatively, simply open the `index.html` file directly in your browser
+
+### System Requirements
+
+- **Browser**: Modern web browser with WebGL 2.0 support (Chrome, Firefox, Edge, Safari)
+- **GPU**: NVIDIA RTX 4060 or equivalent/better recommended for optimal performance
+   - For the best experience with advanced rendering features (shadows, AO, etc.)
+   - Older GPUs may work but with reduced performance, especially at higher resolutions
+- **CPU**: Any modern multi-core processor (4+ cores recommended)
+- **RAM**: 8GB minimum, 16GB recommended
+- **Storage**: Less than 1MB (no additional installation required)
+- **Network**: Not required (runs completely offline)
 
 ## Examples of Exploration
 
