@@ -1,0 +1,113 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: sans-serif;
+}
+canvas {
+  display: block;
+}
+/* Menu panel (M key) */
+#menu {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  z-index: 100;
+  font-size: 14px;
+  line-height: 1.4em;
+  max-width: 390px; /* Increased by 30% from original 300px */
+  user-select: text; /* Enable text selection */
+  cursor: auto; /* Standard text cursor */
+}
+/* h2 heading removed */
+#menu ul {
+  margin: 0;
+  padding-left: 20px;
+}
+#menu li {
+  margin-bottom: 4px;
+}
+/* Styles for new menu structure */
+#menu .category-header {
+  font-weight: bold;
+  color: #55aaff;
+  margin-top: 10px;
+  list-style-type: none;
+  margin-left: -20px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+#menu .separator {
+  list-style-type: none;
+  margin: 12px 0;
+  margin-left: -20px;
+}
+#menu .separator hr {
+  border: none;
+  height: 1px;
+  background-color: #555;
+  margin: 0;
+}
+/* Stats panel (right side) */
+#stats {
+  position: absolute;
+  top: 10px;
+  right: 50px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 5px;
+  z-index: 101;
+  font-family: monospace;
+  max-width: 400px;
+  user-select: text !important; /* Force text selection capability */
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  cursor: auto !important; /* Force standard cursor */
+  pointer-events: auto !important; /* Ensure mouse events are handled */
+}
+
+/* New styles for stats panel categories */
+#stats .stats-category {
+  color: #55aaff;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+#stats .stats-separator {
+  border: none;
+  height: 1px;
+  background-color: #555;
+  margin: 8px 0;
+}
+
+/* First category header doesn't need top margin */
+#stats .stats-category:first-child {
+  margin-top: 0;
+}
+/* Style for selectable elements */
+.selectable {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  cursor: text !important;
+}
+
+/* Style for pause state */
+#stats.paused {
+  background: rgba(255,0,0,0.3);
+}
+#stats.paused::after {
+  content: "PAUSED - GPU INACTIVE (Space to resume)";
+  color: #ff6666;
+  font-weight: bold;
+}

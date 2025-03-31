@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quaternion Julia Fractal Explorer</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Controls menu (can be hidden with M key) -->
+  <div id="menu">
+    <ul>
+      <!-- Camera controls -->
+      <li class="category-header">NAVIGATION:</li>
+      <li><b>Mouse click</b> – Smoothly move view to clicked fractal point</li>
+      <li><b>Mouse scroll</b> – Move in viewing direction (accelerate/decelerate)</li>
+      <li><b>Middle mouse button</b> – Hold down to maintain constant velocity</li>
+      <li><b>Arrow keys</b> – Camera rotation in local axes (left/right, up/down)</li>
+      <li><b>Ctrl + Arrows</b> – Faster camera rotation (5x)</li>
+      <li><b>+</b>/<b>-</b> – Zoom in/out (changes field of view)</li>
+      <li><b>Space</b> – Immediate stop / Pause</li>
+      <li><b>A</b> – Enable/disable camera animations</li>
+      <li><b>D</b> – Enable/disable camera movement deceleration</li>
+      
+      <li class="separator"><hr /></li>
+      
+      <!-- Fractal controls -->
+      <li class="category-header">FRACTAL PARAMETERS:</li>
+      <li><b>R</b> – Reset fractal parameters (random c) and focal length</li>
+      <li><b>0</b> – Start/Stop Slice parameter animation (4D)</li>
+      <li><b>&lt;</b>/<b>&gt;</b> – Decrease/Increase Slice animation range (amplitude)</li>
+      <li><b>9</b> – Cycle through cross-section modes</li>
+      <li><b>[</b>/<b>]</b> – Decrease/Increase cross-section distance</li>
+      
+      <li class="separator"><hr /></li>
+      
+      <!-- Quality settings -->
+      <li class="category-header">RENDERING QUALITY:</li>
+      <li><b>1</b>/<b>2</b> – Increase/Decrease iteration count (±20)</li>
+      <li><b>3</b> – Soft shadows (on/off)</li>
+      <li><b>4</b> – Ambient Occlusion (on/off)</li>
+      <li><b>5</b> – Smooth coloring (on/off)</li>
+      <li><b>6</b> – Cycle color palettes (OFF + 10 different color schemes)</li>
+      <li><b>7</b> – Specular highlight (on/off)</li>
+      <li><b>8</b> – Adaptive Ray Marching (on/off)</li>
+      
+      <li class="separator"><hr /></li>
+      
+      <!-- Interface controls -->
+      <li class="category-header">INTERFACE & RECORDING:</li>
+      <li><b>M</b> – Show/Hide this menu</li>
+      <li><b>P</b> – Show/Hide stats panel</li>
+      <li><b>V</b> – Start/Stop video recording (WebM format)</li>
+      <li><b>Q</b> – Change recording quality (normal/high/ultra)</li>
+    </ul>
+  </div>
+
+  <!-- Stats panel (right side) -->
+  <div id="stats"></div>
+
+  <!-- Import Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Import main application module -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
