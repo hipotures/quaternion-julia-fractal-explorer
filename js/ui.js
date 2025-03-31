@@ -1,7 +1,8 @@
 import { cameraState } from './camera.js';
-import { fractalState, qualitySettings, colorSettings, crossSectionSettings } from './fractal.js';
+import { fractalState, qualitySettings, colorSettings, crossSectionSettings, resetFractalParams } from './fractal.js';
 import { getRecordingQuality } from './recorder.js';
 import { getFps } from './main.js'; // Import FPS function
+import { updateFractalParamsUniform } from './shaders.js';
 
 // --- DOM Elements ---
 const statsElement = document.getElementById('stats');
@@ -117,6 +118,79 @@ export function setPauseVisuals(paused) {
     }
 }
 
+// --- Quaternion Presets ---
+const presetMenu = document.getElementById('preset-menu');
+const quaternionPresets = [
+    new THREE.Vector4(-1.0, 0.2, 0.0, 0.0),      // Q01
+    new THREE.Vector4(-0.291, -0.399, 0.339, 0.437), // Q02
+    new THREE.Vector4(-0.2, 0.4, -0.4, -0.4),    // Q03
+    new THREE.Vector4(-0.213, -0.041, -0.563, -0.560), // Q04
+    new THREE.Vector4(-0.2, 0.6, 0.2, 0.2),      // Q05
+    new THREE.Vector4(-0.162, 0.163, 0.560, -0.599), // Q06
+    new THREE.Vector4(-0.2, 0.8, 0.0, 0.0),      // Q07
+    new THREE.Vector4(-0.445, 0.339, -0.0889, -0.562), // Q08
+    new THREE.Vector4(0.185, 0.478, 0.125, -0.392), // Q09
+    new THREE.Vector4(-0.450, -0.447, 0.181, 0.306), // Q10
+    new THREE.Vector4(-0.218, -0.113, -0.181, -0.496), // Q11
+    new THREE.Vector4(-0.137, -0.630, -0.475, -0.046), // Q12
+    new THREE.Vector4(-0.125, -0.256, 0.847, 0.0895), // Q13
+];
+
+// Function to load a quaternion preset
+function loadQuaternionPreset(index) {
+    // Ensure valid index (0 to 12)
+    if (index < 0 || index >= quaternionPresets.length) return;
+    
+    // Copy preset to fractal parameters
+    fractalState.params.copy(quaternionPresets[index]);
+    
+    // Update the shader uniform
+    updateFractalParamsUniform(fractalState.params);
+    
+    // Reset camera as in R key operation (but keep our parameters)
+    cameraState.focalLength = cameraState.defaultFocalLength;
+    cameraState.isReturningToStart = true;
+    import('./camera.js').then(module => {
+        module.startTargetAnimation(cameraState.initialCenter);
+    });
+    cameraState.moveVelocity = 0;
+    cameraState.isMovingForward = false;
+    
+    console.log(`Loaded Quaternion Preset Q${(index+1).toString().padStart(2, '0')}: (${fractalState.params.x}, ${fractalState.params.y}, ${fractalState.params.z}, ${fractalState.params.w})`);
+}
+
+// Add event listeners to the preset buttons
+function initPresetButtons() {
+    for (let i = 1; i <= 13; i++) {
+        const buttonId = `q${i.toString().padStart(2, '0')}`;
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.addEventListener('click', () => loadQuaternionPreset(i-1));
+        }
+    }
+}
+
+// Function to update preset menu visibility
+function updatePresetMenuVisibility() {
+    if (presetMenu) {
+        // Show preset menu only if either stats or menu are visible
+        presetMenu.style.display = (showStats || showMenu) ? 'flex' : 'none';
+    }
+}
+
+// Update preset menu visibility when toggling menu or stats
+const originalToggleMenu = toggleMenu;
+toggleMenu = function() {
+    originalToggleMenu();
+    updatePresetMenuVisibility();
+};
+
+const originalToggleStats = toggleStats;
+toggleStats = function(forcedState = null) {
+    originalToggleStats(forcedState);
+    updatePresetMenuVisibility();
+};
+
 // Initial setup - ensure menu is visible by default if element exists
 if (menuElement) {
     menuElement.style.display = 'block';
@@ -125,3 +199,6 @@ if (menuElement) {
 if (statsElement) {
     statsElement.style.display = 'block';
 }
+// Initialize preset buttons and visibility
+initPresetButtons();
+updatePresetMenuVisibility();
