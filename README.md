@@ -16,6 +16,7 @@ An interactive 3D explorer for quaternion Julia fractals, allowing real-time nav
 - **10 Color Palettes**: Choose from various color schemes or disable coloring
 - **Video Recording**: Capture your exploration in WebM format with adjustable quality settings
 - **4D Animation**: Animate the 4D slice parameter to observe how the fractal transforms across the fourth dimension
+- **Tour System**: Record, save, and playback guided tours through fractal landscapes with smooth transitions
 
 ## Technical Details
 
@@ -70,6 +71,8 @@ The application features two interface panels:
 | P | Show/hide stats panel | - |
 | V | Start/stop video recording | "REC" indicator when active |
 | Q | Change recording quality | "Rec quality" |
+| T | Open tour recording menu | - |
+| Esc | Stop tour playback | - |
 
 ## Statistics Panel Sections
 
@@ -149,6 +152,29 @@ No complex installation process is required! Simply follow these steps:
 - Use '9' key to enable cross-sections and explore the internal structure
 - Toggle different rendering features (keys 3-8) to see their impact on visual quality
 - Experiment with different color palettes using the '6' key
+- Press 'T' to open the tour recording menu and create your own guided tour
+
+## Tour System
+
+The application includes a comprehensive tour recording and playback system:
+
+1. **Recording Tours**:
+   - Press 'T' to open the tour recording menu
+   - Navigate to interesting locations and click "Register Point" to add waypoints
+   - Click "Finish Tour" to save your tour as a JSON file
+
+2. **Playing Tours**:
+   - Pre-recorded tours appear as buttons (T01, T02, etc.) in the preset menu
+   - Click a tour button to start playback with smooth transitions between points
+   - All fractal settings, camera positions, and render settings are preserved
+   - Press 'Esc' at any time to stop playback
+
+3. **Tour Components**:
+   - Each tour consists of multiple points with complete state information
+   - Smooth transitions between points are automatically calculated
+   - Camera paths follow natural movement trajectories
+
+For more details about the tour system, see the [TOUR.md](TOUR.md) documentation file.
 
 ## Constant Velocity Movement
 

@@ -1,0 +1,84 @@
+{
+  "name": "Tour",
+  "created": "2025-04-01T21:39:29.068Z",
+  "defaultTransitionDuration": 5,
+  "defaultStayDuration": 3,
+  "points": [
+    {
+      "fractalParams": {
+        "c": [
+          -0.2,
+          0.6,
+          0.2,
+          0.2
+        ],
+        "sliceValue": 0.49958991918191237,
+        "sliceAmplitude": 0.5,
+        "sliceAnimated": true
+      },
+      "camera": {
+        "position": [
+          0,
+          0,
+          2
+        ],
+        "rotation": {
+          "pitch": 0,
+          "yaw": 0
+        },
+        "focalLength": 1.5
+      },
+      "renderQuality": {
+        "iterations": 100,
+        "shadows": false,
+        "ao": false,
+        "smoothColor": true,
+        "specular": false,
+        "adaptiveRM": false,
+        "colorPalette": 1
+      },
+      "crossSection": {
+        "mode": 0,
+        "distance": 3.5
+      }
+    },
+    {
+      "fractalParams": {
+        "c": [
+          -0.2,
+          0.6,
+          0.2,
+          0.2
+        ],
+        "sliceValue": -0.40790699059285307,
+        "sliceAmplitude": 0.5,
+        "sliceAnimated": true
+      },
+      "camera": {
+        "position": [
+          0.4483336554318721,
+          0.179492783365299,
+          -0.526341106765269
+        ],
+        "rotation": {
+          "pitch": 2.184402440781442,
+          "yaw": -1.3495752320141987
+        },
+        "focalLength": 1.5
+      },
+      "renderQuality": {
+        "iterations": 100,
+        "shadows": false,
+        "ao": false,
+        "smoothColor": true,
+        "specular": false,
+        "adaptiveRM": false,
+        "colorPalette": 1
+      },
+      "crossSection": {
+        "mode": 0,
+        "distance": 3.5
+      }
+    }
+  ]
+}

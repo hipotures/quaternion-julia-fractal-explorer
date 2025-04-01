@@ -1,0 +1,88 @@
+{
+  "name": "Tour różowa świnka",
+  "created": "2025-04-01T21:45:01.333Z",
+  "defaultTransitionDuration": 5,
+  "defaultStayDuration": 3,
+  "points": [
+    {
+      "fractalParams": {
+        "c": [
+          -0.2,
+          0.6,
+          0.2,
+          0.2
+        ],
+        "sliceValue": -0.2539026724082442,
+        "sliceAmplitude": 0.5,
+        "sliceAnimated": true
+      },
+      "camera": {
+        "position": [
+          0,
+          0,
+          2
+        ],
+        "rotation": {
+          "pitch": 0,
+          "yaw": 0
+        },
+        "focalLength": 1.5,
+        "animationEnabled": true,
+        "decelerationEnabled": true
+      },
+      "renderQuality": {
+        "iterations": 1140,
+        "shadows": false,
+        "ao": false,
+        "smoothColor": true,
+        "specular": false,
+        "adaptiveRM": true,
+        "colorPalette": 3
+      },
+      "crossSection": {
+        "mode": 0,
+        "distance": 3.5
+      }
+    },
+    {
+      "fractalParams": {
+        "c": [
+          -0.2,
+          0.6,
+          0.2,
+          0.2
+        ],
+        "sliceValue": 0.17879125582987512,
+        "sliceAmplitude": 0.5,
+        "sliceAnimated": false
+      },
+      "camera": {
+        "position": [
+          -0.10792420605516558,
+          -0.018448452581621047,
+          0.9697928431852868
+        ],
+        "rotation": {
+          "pitch": -0.2587237081522464,
+          "yaw": 0.35309490886997064
+        },
+        "focalLength": 1.5,
+        "animationEnabled": true,
+        "decelerationEnabled": true
+      },
+      "renderQuality": {
+        "iterations": 1140,
+        "shadows": false,
+        "ao": false,
+        "smoothColor": true,
+        "specular": false,
+        "adaptiveRM": true,
+        "colorPalette": 3
+      },
+      "crossSection": {
+        "mode": 0,
+        "distance": 3.5
+      }
+    }
+  ]
+}
