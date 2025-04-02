@@ -176,101 +176,52 @@ async function saveFractalState(baseFilename) {
     }
 }
 
-// Function to take a screenshot of the entire visible area (with UI)
+// Show a notification message in the UI
+function showNotification(message, duration = 3000) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.left = '50%';
+    notification.style.transform = 'translateX(-50%)';
+    notification.style.padding = '10px 20px';
+    notification.style.background = 'rgba(0, 0, 0, 0.8)';
+    notification.style.color = 'white';
+    notification.style.borderRadius = '5px';
+    notification.style.zIndex = '9999';
+    notification.style.textAlign = 'center';
+    notification.style.fontSize = '14px';
+    notification.textContent = message;
+    
+    // Add to document
+    document.body.appendChild(notification);
+    
+    // Remove after duration
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, duration);
+}
+
+// For UI screenshots, we'll use a simple approach - just capture the WebGL canvas
+// This doesn't capture the UI elements, but we'll show a notification to inform the user
 async function takeFullPageScreenshot() {
     try {
-        // We'll use a simpler approach - we'll just let the browser render the UI
-        // This works because for Shift+S, we don't hide the UI elements
+        // Display notification about UI screenshots
+        showNotification('UI elements may not appear correctly in screenshots. For full UI capture, use your browser\'s screenshot tool.', 5000);
         
-        // First, prepare canvas for the fractal
+        // Just capture the WebGL canvas
         const width = window.innerWidth;
         const height = window.innerHeight;
         
-        // Create a new canvas for drawing
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = width;
         tempCanvas.height = height;
         const ctx = tempCanvas.getContext('2d');
         
-        // Draw the WebGL canvas (fractal) first
+        // Draw fractal
         ctx.drawImage(renderer.domElement, 0, 0);
-        
-        // Get the main UI containers
-        const menuPanel = document.getElementById(CONFIG.UI.SELECTORS.MENU_PANEL);
-        const statsPanel = document.getElementById(CONFIG.UI.SELECTORS.STATS_PANEL);
-        const presetMenu = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
-        const tourMenu = document.getElementById(CONFIG.UI.SELECTORS.TOUR_MENU);
-        
-        // Simple alternative that's more reliable than the DOM-to-canvas approach
-        // Just manually draw the key UI components with their text
-        
-        // Draw the menu panel with proper styling
-        if (menuPanel && getComputedStyle(menuPanel).display !== 'none') {
-            const rect = menuPanel.getBoundingClientRect();
-            const style = getComputedStyle(menuPanel);
-            
-            // Background
-            ctx.fillStyle = style.backgroundColor || 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-            
-            // Border
-            if (style.borderWidth && parseInt(style.borderWidth) > 0) {
-                ctx.strokeStyle = style.borderColor || '#333';
-                ctx.lineWidth = parseInt(style.borderWidth) || 1;
-                ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
-            }
-            
-            // Find main sections inside menu
-            const sections = menuPanel.querySelectorAll('.menu-section, h2, h3');
-            for (const section of sections) {
-                const sectionRect = section.getBoundingClientRect();
-                const sectionStyle = getComputedStyle(section);
-                
-                // Section header
-                if (section.tagName === 'H2' || section.tagName === 'H3') {
-                    ctx.font = `${sectionStyle.fontWeight} ${sectionStyle.fontSize} ${sectionStyle.fontFamily}`;
-                    ctx.fillStyle = sectionStyle.color || '#fff';
-                    ctx.fillText(section.textContent, sectionRect.left + 5, sectionRect.top + parseInt(sectionStyle.fontSize));
-                }
-            }
-        }
-        
-        // Draw stats panel
-        if (statsPanel && getComputedStyle(statsPanel).display !== 'none') {
-            const rect = statsPanel.getBoundingClientRect();
-            const style = getComputedStyle(statsPanel);
-            
-            // Background
-            ctx.fillStyle = style.backgroundColor || 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-            
-            // Try to preserve key info
-            ctx.font = '12px Arial';
-            ctx.fillStyle = '#fff';
-            ctx.fillText('Fractal Stats', rect.left + 10, rect.top + 20);
-        }
-        
-        // Draw preset menu
-        if (presetMenu && getComputedStyle(presetMenu).display !== 'none') {
-            const rect = presetMenu.getBoundingClientRect();
-            
-            // Background
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-            
-            // Add buttons (this is simplified)
-            const buttons = presetMenu.querySelectorAll('button');
-            let y = rect.top + 20;
-            for (const button of buttons) {
-                const buttonRect = button.getBoundingClientRect();
-                ctx.fillStyle = '#444';
-                ctx.fillRect(buttonRect.left, buttonRect.top, buttonRect.width, buttonRect.height);
-                
-                ctx.font = '12px Arial';
-                ctx.fillStyle = '#fff';
-                ctx.fillText(button.textContent, buttonRect.left + 5, buttonRect.top + 15);
-            }
-        }
         
         return tempCanvas;
     } catch (error) {
