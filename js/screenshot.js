@@ -179,7 +179,9 @@ async function saveFractalState(baseFilename) {
 // Function to take a screenshot of the entire visible area (with UI)
 async function takeFullPageScreenshot() {
     try {
-        // We'll capture the entire page
+        // We'll use a simpler approach - we'll just let the browser render the UI
+        // This works because for Shift+S, we don't hide the UI elements
+        
         // First, prepare canvas for the fractal
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -190,44 +192,84 @@ async function takeFullPageScreenshot() {
         tempCanvas.height = height;
         const ctx = tempCanvas.getContext('2d');
         
-        // Draw the WebGL canvas (fractal)
+        // Draw the WebGL canvas (fractal) first
         ctx.drawImage(renderer.domElement, 0, 0);
         
-        // Get all UI elements
-        const elements = document.querySelectorAll('div, span, button, p');
+        // Get the main UI containers
+        const menuPanel = document.getElementById(CONFIG.UI.SELECTORS.MENU_PANEL);
+        const statsPanel = document.getElementById(CONFIG.UI.SELECTORS.STATS_PANEL);
+        const presetMenu = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
+        const tourMenu = document.getElementById(CONFIG.UI.SELECTORS.TOUR_MENU);
         
-        // Filter to those that are visible and add them to the canvas
-        for (const el of elements) {
-            if (el.offsetParent === null) continue; // Element is hidden
+        // Simple alternative that's more reliable than the DOM-to-canvas approach
+        // Just manually draw the key UI components with their text
+        
+        // Draw the menu panel with proper styling
+        if (menuPanel && getComputedStyle(menuPanel).display !== 'none') {
+            const rect = menuPanel.getBoundingClientRect();
+            const style = getComputedStyle(menuPanel);
             
-            const rect = el.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) continue;
+            // Background
+            ctx.fillStyle = style.backgroundColor || 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
             
-            // Create a "snapshot" of the element as canvas
-            // In reality, we're drawing appropriate background colors and borders
-            ctx.save();
-            ctx.fillStyle = getComputedStyle(el).backgroundColor;
-            if (ctx.fillStyle !== 'rgba(0, 0, 0, 0)') {
-                ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-            }
-            
-            // If the element has text, add it
-            if (el.innerText) {
-                const style = getComputedStyle(el);
-                ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-                ctx.fillStyle = style.color;
-                ctx.fillText(el.innerText, rect.left + 5, rect.top + parseInt(style.fontSize));
-            }
-            
-            // Draw border if it exists
-            const borderWidth = parseInt(getComputedStyle(el).borderWidth);
-            if (borderWidth > 0) {
-                ctx.strokeStyle = getComputedStyle(el).borderColor;
-                ctx.lineWidth = borderWidth;
+            // Border
+            if (style.borderWidth && parseInt(style.borderWidth) > 0) {
+                ctx.strokeStyle = style.borderColor || '#333';
+                ctx.lineWidth = parseInt(style.borderWidth) || 1;
                 ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
             }
             
-            ctx.restore();
+            // Find main sections inside menu
+            const sections = menuPanel.querySelectorAll('.menu-section, h2, h3');
+            for (const section of sections) {
+                const sectionRect = section.getBoundingClientRect();
+                const sectionStyle = getComputedStyle(section);
+                
+                // Section header
+                if (section.tagName === 'H2' || section.tagName === 'H3') {
+                    ctx.font = `${sectionStyle.fontWeight} ${sectionStyle.fontSize} ${sectionStyle.fontFamily}`;
+                    ctx.fillStyle = sectionStyle.color || '#fff';
+                    ctx.fillText(section.textContent, sectionRect.left + 5, sectionRect.top + parseInt(sectionStyle.fontSize));
+                }
+            }
+        }
+        
+        // Draw stats panel
+        if (statsPanel && getComputedStyle(statsPanel).display !== 'none') {
+            const rect = statsPanel.getBoundingClientRect();
+            const style = getComputedStyle(statsPanel);
+            
+            // Background
+            ctx.fillStyle = style.backgroundColor || 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            
+            // Try to preserve key info
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Fractal Stats', rect.left + 10, rect.top + 20);
+        }
+        
+        // Draw preset menu
+        if (presetMenu && getComputedStyle(presetMenu).display !== 'none') {
+            const rect = presetMenu.getBoundingClientRect();
+            
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            
+            // Add buttons (this is simplified)
+            const buttons = presetMenu.querySelectorAll('button');
+            let y = rect.top + 20;
+            for (const button of buttons) {
+                const buttonRect = button.getBoundingClientRect();
+                ctx.fillStyle = '#444';
+                ctx.fillRect(buttonRect.left, buttonRect.top, buttonRect.width, buttonRect.height);
+                
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(button.textContent, buttonRect.left + 5, buttonRect.top + 15);
+            }
         }
         
         return tempCanvas;
