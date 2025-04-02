@@ -34,15 +34,14 @@ The application features two interface panels:
 ### Navigation Controls
 | Control | Action | Stats Panel Value |
 |---------|--------|-------------------|
-| Mouse click | Smoothly move to clicked point | - |
-| Mouse scroll | Move forward/backward | "Velocity" |
+| Mouse click | Move view to clicked point | - |
+| Mouse scroll | Move in viewing direction | "Velocity" |
 | Middle mouse button | Hold to maintain constant velocity | "Velocity" |
-| Arrow keys | Rotate camera | "Pitch", "Yaw" |
+| Arrow keys | Camera rotation in local axes | "Pitch", "Yaw" |
 | Ctrl + Arrows | Faster rotation (5x) | "Pitch", "Yaw" |
-| +/- | Zoom in/out (changes field of view) | "Focal length" |
+| +/- | Zoom in/out (changes FOV) | "Focal length" |
 | Space | Pause/resume rendering | Red "PAUSED" overlay |
 | A | Toggle camera animations | "Animations: ON/OFF" |
-| D | Toggle deceleration | "Deceleration: ON/OFF" |
 
 ### Fractal Parameters
 | Control | Action | Stats Panel Value |
