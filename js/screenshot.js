@@ -176,52 +176,106 @@ async function saveFractalState(baseFilename) {
     }
 }
 
-// Show a notification message in the UI
-function showNotification(message, duration = 3000) {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.style.position = 'fixed';
-    notification.style.top = '20px';
-    notification.style.left = '50%';
-    notification.style.transform = 'translateX(-50%)';
-    notification.style.padding = '10px 20px';
-    notification.style.background = 'rgba(0, 0, 0, 0.8)';
-    notification.style.color = 'white';
-    notification.style.borderRadius = '5px';
-    notification.style.zIndex = '9999';
-    notification.style.textAlign = 'center';
-    notification.style.fontSize = '14px';
-    notification.textContent = message;
-    
-    // Add to document
-    document.body.appendChild(notification);
-    
-    // Remove after duration
-    setTimeout(() => {
-        if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-        }
-    }, duration);
-}
-
-// For UI screenshots, we'll use a simple approach - just capture the WebGL canvas
-// This doesn't capture the UI elements, but we'll show a notification to inform the user
+// Function to try to capture UI elements using more sophisticated methods
 async function takeFullPageScreenshot() {
     try {
-        // Display notification about UI screenshots
-        showNotification('UI elements may not appear correctly in screenshots. For full UI capture, use your browser\'s screenshot tool.', 5000);
-        
-        // Just capture the WebGL canvas
         const width = window.innerWidth;
         const height = window.innerHeight;
         
+        // Create a canvas with the size of the viewport
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = width;
         tempCanvas.height = height;
         const ctx = tempCanvas.getContext('2d');
         
-        // Draw fractal
+        // First draw the WebGL canvas (fractal)
         ctx.drawImage(renderer.domElement, 0, 0);
+        
+        // Try to capture the entire HTML document
+        // Get every visible element and try to render it on canvas
+        const elementsToCapture = document.querySelectorAll('div, span, button, p, h1, h2, h3, h4, h5, h6');
+        
+        Array.from(elementsToCapture)
+            .filter(el => {
+                // Only consider visible elements
+                const style = window.getComputedStyle(el);
+                const rect = el.getBoundingClientRect();
+                return style.display !== 'none' && 
+                       style.visibility !== 'hidden' && 
+                       style.opacity !== '0' &&
+                       rect.width > 0 && 
+                       rect.height > 0;
+            })
+            .sort((a, b) => {
+                // Sort by z-index to draw layers correctly
+                const styleA = window.getComputedStyle(a);
+                const styleB = window.getComputedStyle(b);
+                return (parseInt(styleA.zIndex) || 0) - (parseInt(styleB.zIndex) || 0);
+            })
+            .forEach(el => {
+                try {
+                    const rect = el.getBoundingClientRect();
+                    const style = window.getComputedStyle(el);
+                    
+                    // Draw background if present and not transparent
+                    if (style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                        ctx.fillStyle = style.backgroundColor;
+                        ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+                    }
+                    
+                    // Draw borders if present
+                    if (parseInt(style.borderWidth) > 0) {
+                        ctx.strokeStyle = style.borderColor;
+                        ctx.lineWidth = parseInt(style.borderWidth);
+                        ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
+                    }
+                    
+                    // Add text content if present
+                    if (el.textContent && el.textContent.trim() !== '') {
+                        ctx.fillStyle = style.color;
+                        ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+                        ctx.textBaseline = 'top';
+                        
+                        // Calculate text position with padding
+                        const paddingLeft = parseInt(style.paddingLeft) || 0;
+                        const paddingTop = parseInt(style.paddingTop) || 0;
+                        const x = rect.left + paddingLeft;
+                        const y = rect.top + paddingTop;
+                        
+                        // Get text lines
+                        const words = el.textContent.split(' ');
+                        let line = '';
+                        let lineY = y;
+                        const lineHeight = parseInt(style.lineHeight) || parseInt(style.fontSize) * 1.2;
+                        
+                        // Handle multi-line text
+                        for (let n = 0; n < words.length; n++) {
+                            const testLine = line + words[n] + ' ';
+                            const metrics = ctx.measureText(testLine);
+                            if (x + metrics.width > rect.right && n > 0) {
+                                ctx.fillText(line, x, lineY);
+                                line = words[n] + ' ';
+                                lineY += lineHeight;
+                            } else {
+                                line = testLine;
+                            }
+                        }
+                        ctx.fillText(line, x, lineY);
+                    }
+                    
+                    // Try to capture images within elements
+                    const images = el.querySelectorAll('img');
+                    images.forEach(img => {
+                        if (img.complete && img.naturalWidth > 0) {
+                            const imgRect = img.getBoundingClientRect();
+                            ctx.drawImage(img, imgRect.left, imgRect.top, imgRect.width, imgRect.height);
+                        }
+                    });
+                    
+                } catch (err) {
+                    console.warn("Error capturing element:", err);
+                }
+            });
         
         return tempCanvas;
     } catch (error) {
