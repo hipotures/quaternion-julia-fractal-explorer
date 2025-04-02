@@ -236,168 +236,187 @@ export function updateTourPlayback(deltaTime) {
     }
 }
 
-// Apply a tour point to the system
-function applyTourPoint(point) {
-    // Apply fractal parameters
-    import('./fractal.js').then(module => {
-        // Set fractal parameters
-        if (point.fractalParams) {
-            if (point.fractalParams.c && point.fractalParams.c.length === 4) {
-                module.fractalState.params.set(
-                    point.fractalParams.c[0],
-                    point.fractalParams.c[1],
-                    point.fractalParams.c[2],
-                    point.fractalParams.c[3]
-                );
-                
-                // Update the shader uniform
-                import('./shaders.js').then(shadersModule => {
-                    shadersModule.updateFractalParamsUniform(module.fractalState.params);
-                });
-            }
-            
-            // Set slice parameters if provided
-            if (point.fractalParams.sliceValue !== undefined) {
-                module.fractalState.sliceValue = point.fractalParams.sliceValue;
-            }
-            
-            if (point.fractalParams.sliceAmplitude !== undefined) {
-                module.fractalState.sliceAmplitude = point.fractalParams.sliceAmplitude;
-            }
-            
-            if (point.fractalParams.sliceAnimated !== undefined) {
-                module.fractalState.animateSlice = point.fractalParams.sliceAnimated;
-            }
-        }
-        
-        // Apply quality settings
-        if (point.renderQuality) {
-            if (point.renderQuality.iterations !== undefined) {
-                module.qualitySettings.maxIter = point.renderQuality.iterations;
-            }
-            
-            if (point.renderQuality.shadows !== undefined) {
-                module.qualitySettings.enableShadows = point.renderQuality.shadows;
-            }
-            
-            if (point.renderQuality.ao !== undefined) {
-                module.qualitySettings.enableAO = point.renderQuality.ao;
-            }
-            
-            if (point.renderQuality.smoothColor !== undefined) {
-                module.qualitySettings.enableSmoothColor = point.renderQuality.smoothColor;
-            }
-            
-            if (point.renderQuality.specular !== undefined) {
-                module.qualitySettings.enableSpecular = point.renderQuality.specular;
-            }
-            
-            if (point.renderQuality.adaptiveRM !== undefined) {
-                module.qualitySettings.enableAdaptiveSteps = point.renderQuality.adaptiveRM;
-                
-                // Adaptive RM requires a special uniform update, not covered by updateQualityUniforms
-                import('./shaders.js').then(shadersModule => {
-                    shadersModule.updateAdaptiveStepsUniform(point.renderQuality.adaptiveRM);
-                    console.log("Applied Adaptive Ray Marching:", point.renderQuality.adaptiveRM ? "ON" : "OFF");
-                });
-            }
-            
-            if (point.renderQuality.colorPalette !== undefined) {
-                // Set the palette index
-                module.colorSettings.paletteIndex = point.renderQuality.colorPalette;
-                // Enable colors if palette index is not 0
-                module.colorSettings.colorEnabled = (point.renderQuality.colorPalette !== 0);
-                
-                // Update the shader uniforms with proper values
-                // Shader expects index 0-9 for palettes (UI uses 0-10 where 0 means "off")
-                const shaderPaletteIndex = module.colorSettings.colorEnabled ? 
-                    point.renderQuality.colorPalette - 1 : 0;
-                
-                import('./shaders.js').then(shadersModule => {
-                    shadersModule.updateColorUniforms({
-                        colorEnabled: module.colorSettings.colorEnabled,
-                        paletteIndex: shaderPaletteIndex
-                    });
-                });
-                
-                console.log("Applied color palette:", point.renderQuality.colorPalette === 0 ? 
-                    "OFF" : point.renderQuality.colorPalette);
-            }
-        }
-        
-        // Apply cross-section settings
-        if (point.crossSection) {
-            if (point.crossSection.mode !== undefined) {
-                module.crossSectionSettings.clipMode = point.crossSection.mode;
-                
-                // Update clip mode uniform directly
-                import('./shaders.js').then(shadersModule => {
-                    shadersModule.updateClipModeUniform(point.crossSection.mode);
-                    console.log("Applied Cross-Section Mode:", point.crossSection.mode);
-                });
-            }
-            
-            if (point.crossSection.distance !== undefined) {
-                module.crossSectionSettings.clipDistance = point.crossSection.distance;
-                
-                // Update clip distance uniform directly
-                import('./shaders.js').then(shadersModule => {
-                    shadersModule.updateClipDistanceUniform(point.crossSection.distance);
-                    console.log("Applied Cross-Section Distance:", point.crossSection.distance.toFixed(2));
-                });
-            }
-        }
-    });
+// Module references (cached after first import)
+let fractalModule = null;
+let shadersModule = null;
+let cameraModule = null;
+
+// Pre-load modules to avoid dynamic imports during tour playback
+export async function preloadTourModules() {
+    // Load core modules needed for tour playback
+    if (!fractalModule) fractalModule = await import('./fractal.js');
+    if (!shadersModule) shadersModule = await import('./shaders.js');
+    if (!cameraModule) cameraModule = await import('./camera.js');
     
-    // Apply camera parameters
-    import('./camera.js').then(module => {
-        if (point.camera) {
-            // Set camera position
-            if (point.camera.position && point.camera.position.length === 3) {
-                module.cameraState.position.set(
-                    point.camera.position[0],
-                    point.camera.position[1],
-                    point.camera.position[2]
-                );
-            }
-            
-            // Set camera rotation
-            if (point.camera.rotation) {
-                if (point.camera.rotation.pitch !== undefined) {
-                    module.cameraState.pitch = point.camera.rotation.pitch;
-                }
-                
-                if (point.camera.rotation.yaw !== undefined) {
-                    module.cameraState.yaw = point.camera.rotation.yaw;
-                }
-                
-                // Update camera rotation based on pitch and yaw
-                module.updateCameraRotation();
-            }
-            
-            // Set focal length
-            if (point.camera.focalLength !== undefined) {
-                module.cameraState.focalLength = point.camera.focalLength;
-            }
-            
-            // Apply camera animation settings if provided
-            if (point.camera.animationEnabled !== undefined) {
-                module.cameraState.animationEnabled = point.camera.animationEnabled;
-            }
-            
-            if (point.camera.decelerationEnabled !== undefined) {
-                module.cameraState.decelerationEnabled = point.camera.decelerationEnabled;
-            }
-            
-            // Update camera state and uniforms
-            module.updateCameraState();
-        }
-    });
+    console.log("Tour playback modules preloaded");
+    return { fractalModule, shadersModule, cameraModule };
+}
+
+// Apply a tour point to the system
+async function applyTourPoint(point) {
+    // Ensure modules are loaded
+    if (!fractalModule || !shadersModule || !cameraModule) {
+        await preloadTourModules();
+    }
+    
+    // Apply different aspects of the tour point
+    if (point.fractalParams) applyFractalParameters(point.fractalParams);
+    if (point.renderQuality) applyRenderQuality(point.renderQuality);
+    if (point.crossSection) applyCrossSection(point.crossSection);
+    if (point.camera) applyCameraSettings(point.camera);
     
     // Force update stats panel to reflect changes
     if (window.updateStatsPanel) {
         window.updateStatsPanel(true);
     }
+}
+
+// Apply fractal parameters from a tour point
+function applyFractalParameters(params) {
+    if (!fractalModule) return;
+    
+    // Set quaternion parameters (c value)
+    if (params.c && params.c.length === 4) {
+        fractalModule.fractalState.params.set(
+            params.c[0], params.c[1], params.c[2], params.c[3]
+        );
+        
+        // Update shader uniform
+        shadersModule.updateFractalParamsUniform(fractalModule.fractalState.params);
+    }
+    
+    // Set slice parameters
+    if (params.sliceValue !== undefined) {
+        fractalModule.fractalState.sliceValue = params.sliceValue;
+        shadersModule.updateSliceUniform(params.sliceValue);
+    }
+    
+    if (params.sliceAmplitude !== undefined) {
+        fractalModule.fractalState.sliceAmplitude = params.sliceAmplitude;
+    }
+    
+    if (params.sliceAnimated !== undefined) {
+        fractalModule.fractalState.animateSlice = params.sliceAnimated;
+    }
+}
+
+// Apply render quality settings from a tour point
+function applyRenderQuality(quality) {
+    if (!fractalModule || !shadersModule) return;
+    
+    // Update quality settings in fractal state
+    if (quality.iterations !== undefined) {
+        fractalModule.qualitySettings.maxIter = quality.iterations;
+    }
+    
+    if (quality.shadows !== undefined) {
+        fractalModule.qualitySettings.enableShadows = quality.shadows;
+    }
+    
+    if (quality.ao !== undefined) {
+        fractalModule.qualitySettings.enableAO = quality.ao;
+    }
+    
+    if (quality.smoothColor !== undefined) {
+        fractalModule.qualitySettings.enableSmoothColor = quality.smoothColor;
+    }
+    
+    if (quality.specular !== undefined) {
+        fractalModule.qualitySettings.enableSpecular = quality.specular;
+    }
+    
+    // Apply adaptive ray marching setting
+    if (quality.adaptiveRM !== undefined) {
+        fractalModule.qualitySettings.enableAdaptiveSteps = quality.adaptiveRM;
+        shadersModule.updateAdaptiveStepsUniform(quality.adaptiveRM);
+        console.log("Applied Adaptive Ray Marching:", quality.adaptiveRM ? "ON" : "OFF");
+    }
+    
+    // Apply color palette setting
+    if (quality.colorPalette !== undefined) {
+        // Set the palette index
+        fractalModule.colorSettings.paletteIndex = quality.colorPalette;
+        // Enable colors if palette index is not 0
+        fractalModule.colorSettings.colorEnabled = (quality.colorPalette !== 0);
+        
+        // Update shader uniforms with proper values
+        // Shader expects index 0-9 for palettes (UI uses 0-10 where 0 means "off")
+        const shaderPaletteIndex = fractalModule.colorSettings.colorEnabled ? 
+            quality.colorPalette - 1 : 0;
+        
+        shadersModule.updateColorUniforms({
+            colorEnabled: fractalModule.colorSettings.colorEnabled,
+            paletteIndex: shaderPaletteIndex
+        });
+        
+        console.log("Applied color palette:", quality.colorPalette === 0 ? "OFF" : quality.colorPalette);
+    }
+    
+    // Update all quality uniforms to ensure consistency
+    shadersModule.updateQualityUniforms(fractalModule.qualitySettings);
+}
+
+// Apply cross-section settings from a tour point
+function applyCrossSection(crossSection) {
+    if (!fractalModule || !shadersModule) return;
+    
+    if (crossSection.mode !== undefined) {
+        fractalModule.crossSectionSettings.clipMode = crossSection.mode;
+        shadersModule.updateClipModeUniform(crossSection.mode);
+        console.log("Applied Cross-Section Mode:", crossSection.mode);
+    }
+    
+    if (crossSection.distance !== undefined) {
+        fractalModule.crossSectionSettings.clipDistance = crossSection.distance;
+        shadersModule.updateClipDistanceUniform(crossSection.distance);
+        console.log("Applied Cross-Section Distance:", crossSection.distance.toFixed(2));
+    }
+}
+
+// Apply camera settings from a tour point
+function applyCameraSettings(camera) {
+    if (!cameraModule) return;
+    
+    // Set camera position
+    if (camera.position && camera.position.length === 3) {
+        cameraModule.cameraState.position.set(
+            camera.position[0],
+            camera.position[1],
+            camera.position[2]
+        );
+    }
+    
+    // Set camera rotation
+    if (camera.rotation) {
+        if (camera.rotation.pitch !== undefined) {
+            cameraModule.cameraState.pitch = camera.rotation.pitch;
+        }
+        
+        if (camera.rotation.yaw !== undefined) {
+            cameraModule.cameraState.yaw = camera.rotation.yaw;
+        }
+        
+        // Update camera rotation based on pitch and yaw
+        cameraModule.updateCameraRotation();
+    }
+    
+    // Set focal length
+    if (camera.focalLength !== undefined) {
+        cameraModule.cameraState.focalLength = camera.focalLength;
+        shadersModule.updateFocalLengthUniform(camera.focalLength);
+    }
+    
+    // Apply camera animation settings
+    if (camera.animationEnabled !== undefined) {
+        cameraModule.cameraState.animationEnabled = camera.animationEnabled;
+    }
+    
+    if (camera.decelerationEnabled !== undefined) {
+        cameraModule.cameraState.decelerationEnabled = camera.decelerationEnabled;
+    }
+    
+    // Update camera state and uniforms
+    cameraModule.updateCameraState();
 }
 
 // Interpolate between two tour points
