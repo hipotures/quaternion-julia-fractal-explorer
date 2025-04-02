@@ -157,12 +157,35 @@ export const CONFIG = {
         },
         AMBIENT_FACTOR: 0.2,           // Ambient light coefficient
         DIFFUSE_FACTOR: 0.8,           // Diffuse light coefficient
-        SPECULAR_FACTOR: 0.5,          // Specular reflection coefficient
+        SPECULAR_FACTOR: 0.5,           // Specular reflection coefficient
         MAX_AO_ITERATIONS: 5,          // Number of ambient occlusion iterations
         AO_STEP_DISTANCE: 0.02,        // Ambient occlusion step distance
         AO_FACTOR: 0.2,                // Ambient occlusion strength factor
         EPSILON: 0.001,                // Epsilon value for normal calculations and others
         HIT_THRESHOLD: 0.0001          // Distance threshold for surface hit detection
+    },
+    
+    // Screenshot parameters
+    SCREENSHOT: {
+        FORMATS: [
+            { id: 'png', extension: 'png', mime: 'image/png' },
+            { id: 'jpg', extension: 'jpg', mime: 'image/jpeg', quality: 0.9 },
+            { id: 'webp', extension: 'webp', mime: 'image/webp', quality: 0.9 },
+            { id: 'bmp', extension: 'bmp', mime: 'image/bmp' },
+            { id: 'avif', extension: 'avif', mime: 'image/avif', quality: 0.8 },
+            { id: 'tiff', extension: 'tiff', mime: 'image/tiff' }
+        ],
+        DEFAULT_FORMAT: 'png',
+        RESCALING: {
+            ENABLED: false,
+            MAX_WIDTH: null,
+            MAX_HEIGHT: null
+        },
+        SAVE_STATE: true,              // Whether to save fractal state as a JSON file
+        KEYS: {
+            TAKE_SCREENSHOT: 's',
+            TAKE_SCREENSHOT_WITH_UI: 'S'
+        }
     }
 };
 

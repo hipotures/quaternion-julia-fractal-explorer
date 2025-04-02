@@ -2,6 +2,7 @@ import { renderer } from './scene.js';
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { uniforms, getRotationMatrix, updateFractalParamsUniform } from './shaders.js'; // Import uniforms for raycasting estimate
 import { CONFIG } from './config.js'; // Import configuration values
+import { handleScreenshotKeys } from './screenshot.js'; // Import screenshot functionality
 import {
     camera, cameraState, updateOrbitCamera, updateCameraRotation,
     startTargetAnimation, syncPitchYawFromCamera, setupInitialCamera, updateCameraState
@@ -255,6 +256,12 @@ function handleKeyDown(e) {
 
     // Delegate to the appropriate handler based on key group
     const key = e.key.toLowerCase();
+    
+    // Screenshot keys - check first to handle shift key correctly
+    if (key === CONFIG.SCREENSHOT.KEYS.TAKE_SCREENSHOT) {
+        handleScreenshotKeys(e.key, e.shiftKey);
+        return;
+    }
     
     // UI controls
     if ([CONFIG.KEYS.TOGGLE_STATS, CONFIG.KEYS.TOGGLE_MENU, CONFIG.KEYS.TOGGLE_TOUR].includes(key)) {
