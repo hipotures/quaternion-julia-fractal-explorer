@@ -1,78 +1,81 @@
 /**
- * Centralny obiekt konfiguracyjny dla aplikacji Quaternion Julia Fractals
- * Zawiera wszystkie stałe wartości pogrupowane tematycznie, które wcześniej były wpisane na stałe w kodzie.
+ * Central configuration object for the Quaternion Julia Fractals application
+ * Contains all constant values grouped thematically, which were previously hardcoded throughout the application.
  */
 
 export const CONFIG = {
-    // Parametry kamery i jej ruchu
+    // Camera parameters and movement
     CAMERA: {
-        INITIAL_RADIUS: 2.0,           // Początkowa odległość kamery od środka sceny
-        MAX_DISTANCE: 2.4,             // Maksymalna dozwolona odległość od centrum
-        DEFAULT_FOCAL_LENGTH: 1.5,     // Domyślna długość ogniskowa (wpływa na pole widzenia)
-        MOVE_SPEED: 0.005,             // Bazowy współczynnik prędkości (obecnie nieużywany)
-        MAX_VELOCITY: 0.05,            // Maksymalna dozwolona prędkość przód/tył
-        DECELERATION: 0.005,           // Współczynnik hamowania (wyższy = szybsze zatrzymanie)
-        VELOCITY_SENSITIVITY: 0.000003, // Mnożnik dla delta kółka myszy do dostosowania prędkości
-        TARGET_DURATION: 1.0,          // Czas trwania animacji płynnego przejścia (w sekundach)
-        PULLBACK_FACTOR: 0.001,        // Współczynnik przyciągania z powrotem kamery
-        MIN_VELOCITY_THRESHOLD: 0.0001 // Próg prędkości minimalnej do zatrzymania ruchu
+        INITIAL_RADIUS: 2.0,           // Initial camera distance from scene center
+        MAX_DISTANCE: 2.4,             // Maximum allowed distance from center
+        DEFAULT_FOCAL_LENGTH: 1.5,     // Default focal length (affects field of view)
+        MOVE_SPEED: 0.005,             // Base speed coefficient (currently unused)
+        MAX_VELOCITY: 0.05,            // Maximum allowed forward/backward velocity
+        DECELERATION: 0.005,           // Deceleration coefficient (higher = faster stop)
+        VELOCITY_SENSITIVITY: 0.000003, // Multiplier for mouse wheel delta to adjust velocity
+        TARGET_DURATION: 1.0,          // Duration of smooth transition animation (in seconds)
+        PULLBACK_FACTOR: 0.001,        // Camera pull-back coefficient
+        MIN_VELOCITY_THRESHOLD: 0.0001 // Minimum velocity threshold to stop movement
     },
     
-    // Parametry fraktali i ich renderowania
+    // Fractal parameters and rendering
     FRACTAL: {
-        DEFAULT_MAX_ITER: 100,         // Domyślna maksymalna liczba iteracji raymarching
-        ITER_STEP: 20,                 // Krok zmiany liczby iteracji (klawisze 1/2)
-        MIN_ITER: 20,                  // Minimalna dozwolona liczba iteracji
-        MAX_ITER: 2000,                // Maksymalna dozwolona liczba iteracji
-        SLICE_ANIM_SPEED: 0.15,        // Szybkość animacji przekroju 4D
-        SLICE_AMPLITUDE: 0.5,          // Amplituda animacji przekroju (zakres od -amplitude do +amplitude)
-        CLIP_DISTANCE: 3.5,            // Odległość płaszczyzny tnącej od kamery
-        CLIP_DISTANCE_STEP: 0.2,       // Krok zmiany odległości tnącej
-        MAX_PALETTE_COUNT: 11          // Liczba dostępnych palet kolorów (0 = wyłączone, 1-10 = palety)
+        DEFAULT_MAX_ITER: 100,         // Default maximum number of raymarching iterations
+        ITER_STEP: 20,                 // Iteration count change step (keys 1/2)
+        MIN_ITER: 20,                  // Minimum allowed iteration count
+        MAX_ITER: 2000,                // Maximum allowed iteration count
+        SLICE_ANIM_SPEED: 0.15,        // 4D slice animation speed
+        SLICE_AMPLITUDE: 0.5,          // Slice animation amplitude (range from -amplitude to +amplitude)
+        CLIP_DISTANCE: 3.5,            // Distance of clipping plane from camera
+        CLIP_DISTANCE_STEP: 0.2,       // Clipping distance change step
+        MAX_PALETTE_COUNT: 11          // Number of available color palettes (0 = off, 1-10 = palettes)
     },
     
-    // Parametry algorytmu raymarching
+    // Raymarching algorithm parameters
     RAYMARCHING: {
-        SIMPLE_DISTANCE_MAX_ITER: 20,  // Liczba iteracji dla uproszczonego estimatora odległości
-        ESCAPE_RADIUS: 4.0,            // Promień ucieczki dla funkcji DE (Distance Estimator)
-        DEFAULT_STEP_SIZE: 0.02,       // Domyślny rozmiar kroku przy bliskich odległościach
-        STEP_MULTIPLIER: 0.8,          // Mnożnik dla kroku bezpieczeństwa (0.8 = 80% DE)
-        STEP_COUNT: 32,                // Liczba kroków raycasting dla kliknięcia myszy
-        HIT_THRESHOLD: 0.01,           // Próg trafienia dla raycasting
-        MAX_DISTANCE: 20.0,            // Maksymalna odległość raycasting
-        MIN_STEP_SIZE: 1e-6,           // Minimalny rozmiar kroku w DE
-        SHADOW_FACTOR: 0.5,            // Współczynnik cienia w renderingu
-        SHADOW_POWER: 32.0,            // Wykładnik potęgowy dla obliczania cieni
-        AO_STRENGTH: 0.5,              // Siła okluzji otoczenia (Ambient Occlusion)
-        MAX_MARCH_STEPS: 256,          // Maksymalna liczba kroków raymarching w shaderze
-        MAX_MARCH_DISTANCE: 150.0      // Maksymalna odległość raymarching w shaderze
+        SIMPLE_DISTANCE_MAX_ITER: 20,  // Iteration count for simplified distance estimator
+        ESCAPE_RADIUS: 4.0,            // Escape radius for DE (Distance Estimator) function
+        DEFAULT_STEP_SIZE: 0.02,       // Default step size for close distances
+        STEP_MULTIPLIER: 0.8,          // Safety step multiplier (0.8 = 80% of DE)
+        STEP_COUNT: 32,                // Number of raycasting steps for mouse click
+        HIT_THRESHOLD: 0.01,           // Hit threshold for raycasting
+        MAX_DISTANCE: 20.0,            // Maximum raycasting distance
+        MIN_STEP_SIZE: 1e-6,           // Minimum step size in DE
+        SHADOW_FACTOR: 0.5,            // Shadow factor in rendering
+        SHADOW_POWER: 32.0,            // Power exponent for shadow calculations
+        AO_STRENGTH: 0.5,              // Ambient Occlusion strength
+        MAX_MARCH_STEPS: 256,          // Maximum number of raymarching steps in shader
+        MAX_MARCH_DISTANCE: 150.0      // Maximum raymarching distance in shader
     },
     
-    // Parametry nagrywania
+    // Recording parameters
     RECORDER: {
-        FPS: 60,                       // Liczba klatek na sekundę dla nagrywania
-        TIMESLICE_MS: 1000,            // Czas (ms) między fragmentami nagrania (tworzy częstsze keyframes)
-        FORCE_STATS_UPDATE_DURATION: 5, // Czas (s) wymuszania aktualizacji statystyk po nagrywaniu
+        FPS: 60,                       // Frames per second for recording
+        TIMESLICE_MS: 1000,            // Time (ms) between recording fragments (creates more frequent keyframes)
+        FORCE_STATS_UPDATE_DURATION: 5, // Time (s) to force stats updates after recording
         BITRATES: {
-            NORMAL: 5000000,           // 5 Mbps - normalna jakość
-            HIGH: 10000000,            // 10 Mbps - wysoka jakość
-            ULTRA: 16000000            // 16 Mbps - ultra jakość
+            NORMAL: 5000000,           // 5 Mbps - normal quality
+            HIGH: 10000000,            // 10 Mbps - high quality 
+            ULTRA: 16000000            // 16 Mbps - ultra quality
         },
         UI_TEXT: {
-            RECORDING_INDICATOR: 'REC ⚫' // Tekst wskaźnika nagrywania
+            RECORDING_INDICATOR: 'REC ⚫' // Recording indicator text
         }
     },
     
-    // Parametry tour (wycieczek)
+    // Tour parameters
     TOURS: {
-        DEFAULT_TRANSITION_DURATION: 5.0, // Domyślny czas przejścia między punktami (sekundy)
-        DEFAULT_STAY_DURATION: 3.0,     // Domyślny czas pozostania w punkcie (sekundy)
-        TOUR_ENDING_DURATION: 3.0,      // Czas wyświetlania komunikatu o zakończeniu wycieczki
-        PATH: 'tours/',                 // Ścieżka do plików wycieczek
-        FILE_PATTERN: 'tour{NUM}.json'  // Format nazwy pliku wycieczki
+        DEFAULT_TRANSITION_DURATION: 5.0, // Default transition time between points (seconds)
+        DEFAULT_STAY_DURATION: 3.0,     // Default time to stay at each point (seconds)
+        TOUR_ENDING_DURATION: 3.0,      // Duration to display tour completion message
+        PATH: 'tours/',                 // Path to tour files
+        FILE_PATTERN: 'tour{NUM}.json', // Tour filename pattern
+        MENU_HIDE_DELAY: 100,           // Delay in ms for hiding menu elements
+        SAFE_STEP: 0.002,               // Safe step size when continuing after a hit
+        CROSS_SECTION_THRESHOLD: 0.01   // Threshold for cross-section rendering
     },
     
-    // Selektory i teksty UI
+    // UI selectors and texts
     UI: {
         SELECTORS: {
             STATS_PANEL: 'stats',
@@ -107,7 +110,7 @@ export const CONFIG = {
         }
     },
     
-    // Klawisze sterujące
+    // Control keys
     KEYS: {
         CONTROL: 'Control',
         ARROW_LEFT: 'arrowleft',
@@ -119,7 +122,7 @@ export const CONFIG = {
         MINUS: '-',
         EQUALS: '=',
         ESCAPE: 'Escape',
-        // Funkcjonalne
+        // Functional
         TOGGLE_STATS: 'p',
         TOGGLE_MENU: 'm',
         TOGGLE_TOUR: 't',
@@ -129,7 +132,7 @@ export const CONFIG = {
         TOGGLE_ANIMATION: 'a',
         TOGGLE_SLICE_ANIMATION: '0',
         TOGGLE_DECELERATION: 'd',
-        // Jakość renderowania
+        // Rendering quality
         INCREASE_ITERATIONS: '1',
         DECREASE_ITERATIONS: '2',
         TOGGLE_SHADOWS: '3',
@@ -145,22 +148,23 @@ export const CONFIG = {
         INCREASE_SLICE_AMPLITUDE: '.'
     },
     
-    // Parametry renderu i shadera
+    // Rendering and shader parameters
     SHADER: {
         LIGHT_POSITION: {
             X: 10.0,
             Y: 10.0,
             Z: 10.0
         },
-        AMBIENT_FACTOR: 0.2,           // Współczynnik światła otoczenia (ambient)
-        DIFFUSE_FACTOR: 0.8,           // Współczynnik światła rozproszonego (diffuse)
-        SPECULAR_FACTOR: 0.5,          // Współczynnik odbicia (specular)
-        MAX_AO_ITERATIONS: 5,          // Liczba iteracji dla ambient occlusion
-        AO_STEP_DISTANCE: 0.02,        // Odległość kroku dla ambient occlusion
-        AO_FACTOR: 0.2,                // Współczynnik mocy ambient occlusion
-        EPSILON: 0.001                 // Wartość epsilon dla obliczeń normalnych i innych
+        AMBIENT_FACTOR: 0.2,           // Ambient light coefficient
+        DIFFUSE_FACTOR: 0.8,           // Diffuse light coefficient
+        SPECULAR_FACTOR: 0.5,          // Specular reflection coefficient
+        MAX_AO_ITERATIONS: 5,          // Number of ambient occlusion iterations
+        AO_STEP_DISTANCE: 0.02,        // Ambient occlusion step distance
+        AO_FACTOR: 0.2,                // Ambient occlusion strength factor
+        EPSILON: 0.001,                // Epsilon value for normal calculations and others
+        HIT_THRESHOLD: 0.0001          // Distance threshold for surface hit detection
     }
 };
 
-// Eksport domyślny dla wygody
+// Default export for convenience
 export default CONFIG;
