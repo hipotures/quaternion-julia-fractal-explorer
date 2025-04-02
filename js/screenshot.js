@@ -1,6 +1,6 @@
-import { renderer } from './scene.js';
+import { renderer, scene } from './scene.js';
 import { fractalState, qualitySettings, colorSettings, crossSectionSettings } from './fractal.js';
-import { cameraState } from './camera.js';
+import { camera, cameraState } from './camera.js';
 import { CONFIG } from './config.js';
 
 // Funkcja pozyskująca stan fraktala (podobna do registerTourPoint z tourRecording.js)
@@ -184,6 +184,12 @@ export async function takeScreenshot(includeUI = false) {
     }
     
     try {
+        // Zapisz obecne ustawienie preserveDrawingBuffer
+        const originalPreserveDrawingBuffer = renderer.preserveDrawingBuffer;
+        
+        // Włącz preserveDrawingBuffer aby umożliwić poprawne zrzuty ekranu WebGL
+        renderer.preserveDrawingBuffer = true;
+        
         // Jeśli nie chcemy UI, ukryj je przed zrzutem
         if (!includeUI) {
             hideUIForScreenshot();
@@ -192,20 +198,34 @@ export async function takeScreenshot(includeUI = false) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         
+        // Wymuś przerysowanie sceny przed zrzutem ekranu
+        if (scene) {
+            renderer.render(scene, camera);
+        }
+        
         // Wymiary canvas
         const canvas = renderer.domElement;
+        
+        // Utwórz nowy Canvas 2D aby skopiować zawartość WebGL canvas
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const ctx = tempCanvas.getContext('2d');
+        
+        // Kopiuj zawartość canvas WebGL do canvas 2D
+        ctx.drawImage(canvas, 0, 0);
         
         // Wykonaj zrzut ekranu (ewentualnie przeskalowany)
         let screenshotData;
         if (CONFIG.SCREENSHOT.RESCALING.ENABLED) {
             const scaled = rescaleImage(
-                canvas, 
+                tempCanvas, 
                 CONFIG.SCREENSHOT.RESCALING.MAX_WIDTH, 
                 CONFIG.SCREENSHOT.RESCALING.MAX_HEIGHT
             );
             screenshotData = scaled.canvas;
         } else {
-            screenshotData = canvas;
+            screenshotData = tempCanvas;
         }
         
         // Znajdź format na podstawie konfiguracji
@@ -216,13 +236,16 @@ export async function takeScreenshot(includeUI = false) {
         // Opcje konwersji dla formatów z możliwością kompresji
         const options = formatConfig.quality ? { quality: formatConfig.quality } : undefined;
         
-        // Pozyskaj dane obrazu
+        // Pozyskaj dane obrazu (używając canvas 2D, który zawsze działa poprawnie z toDataURL)
         const dataURL = screenshotData.toDataURL(formatConfig.mime, options);
+        
+        // Przywróć oryginalne ustawienie preserveDrawingBuffer
+        renderer.preserveDrawingBuffer = originalPreserveDrawingBuffer;
         
         // Generuj nazwę pliku z timestampem
         const now = new Date();
         const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`;
-        const baseFilename = `quaternion_julia_fractal_${timestamp}${includeUI ? '_with_ui' : ''}`;
+        const baseFilename = `qjf_${timestamp}`;
         const filename = `${baseFilename}.${formatConfig.extension}`;
         
         // Utwórz link do pobrania
