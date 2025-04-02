@@ -319,91 +319,128 @@ export const fragmentShader = `
       return spec;
   }
 
-  // Color palettes (10 different ones)
-  vec3 palette1(float t){ // Rainbow
+    // --- Color Palette System ---
+  // Helper functions for creating color palettes
+
+  // Creates a sinusoidal wave pattern with phase shifts
+  vec3 sinePalette(float t, float freq, vec3 phase, vec3 amp, vec3 offset) {
     return vec3(
-      0.5 + 0.5*sin(6.28*t),
-      0.5 + 0.5*sin(6.28*(t+0.33)),
-      0.5 + 0.5*sin(6.28*(t+0.66))
-    );
-  }
-  vec3 palette2(float t){ // Blue-yellow
-    return vec3(
-      sin(3.14*t),
-      t*t,
-      1.0 - t
-    );
-  }
-  vec3 palette3(float t){ // Red-violet
-    return vec3(
-      0.8 + 0.2*sin(3.14*t),
-      0.2*t*t,
-      0.6 - 0.3*cos(3.14*t*2.0)
-    );
-  }
-  vec3 palette4(float t){ // Green-blue
-    return vec3(
-      0.2*sin(3.14*t*2.0),
-      0.5 + 0.5*sin(6.28*t),
-      0.5 + 0.3*sin(9.42*t)
-    );
-  }
-  vec3 palette5(float t){ // Warm (orange-red)
-    return vec3(
-      0.8 + 0.2*sin(t),
-      0.4 + 0.3*sin(t*2.0),
-      0.1 + 0.1*sin(t*3.0)
-    );
-  }
-  vec3 palette6(float t){ // Polar glow
-    return vec3(
-      0.1 + 0.4*sin(t*3.14),
-      0.3 + 0.6*sin(t*3.14+1.0),
-      0.7 + 0.3*sin(t*3.14+2.0)
-    );
-  }
-  vec3 palette7(float t){ // Cyan-magenta
-    float s = t*2.0;
-    return vec3(
-      0.5 - 0.5*cos(s),
-      0.5 - 0.5*cos(s+2.0),
-      0.5 - 0.5*cos(s+4.0)
-    );
-  }
-  vec3 palette8(float t){ // Desert
-    return vec3(
-      0.5 + 0.5*pow(t, 0.4),
-      0.3 + 0.3*pow(t, 1.2),
-      0.2 + 0.1*pow(t, 2.5)
-    );
-  }
-  vec3 palette9(float t){ // Underwater
-    return vec3(
-      0.1 + 0.15*sin(t*4.0),
-      0.3 + 0.3*sin(t*2.0 + 1.5),
-      0.5 + 0.5*sin(t + 1.0)
-    );
-  }
-  vec3 palette10(float t){ // Metallic
-    float v = 0.6 + 0.4*sin(t*15.0);
-    return vec3(
-      v * (0.3 + 0.3*sin(t*4.0)),
-      v * (0.3 + 0.3*sin(t*4.0 + 2.0)),
-      v * (0.3 + 0.3*sin(t*4.0 + 4.0))
+      offset.r + amp.r * sin(freq * t + phase.r),
+      offset.g + amp.g * sin(freq * t + phase.g),
+      offset.b + amp.b * sin(freq * t + phase.b)
     );
   }
 
-  vec3 getPalette(float t, int idx){
-    if(idx == 0) return palette1(t);
-    else if(idx == 1) return palette2(t);
-    else if(idx == 2) return palette3(t);
-    else if(idx == 3) return palette4(t);
-    else if(idx == 4) return palette5(t);
-    else if(idx == 5) return palette6(t);
-    else if(idx == 6) return palette7(t);
-    else if(idx == 7) return palette8(t);
-    else if(idx == 8) return palette9(t);
-    else return palette10(t);
+  // Individual palette definitions - each has a descriptive comment
+  // and uses the most appropriate technique for its color scheme
+  
+  // Palette 1: Rainbow - Full spectrum color cycle with 120° phase shifts
+  vec3 palette1(float t) {
+    return sinePalette(
+      t, 6.28, // frequency = 2π for full cycle
+      vec3(0.0, 2.09, 4.19), // 2π/3 phase shifts (120°)
+      vec3(0.5, 0.5, 0.5),   // amplitude
+      vec3(0.5, 0.5, 0.5)    // offset
+    );
+  }
+  
+  // Palette 2: Blue-yellow - Complementary blue/yellow gradient
+  vec3 palette2(float t) {
+    return vec3(
+      sin(3.14*t),  // Red: sine wave
+      t*t,          // Green: quadratic curve
+      1.0 - t       // Blue: linear falloff
+    );
+  }
+  
+  // Palette 3: Red-violet - Rich warm tones with violet undertones
+  vec3 palette3(float t) {
+    return vec3(
+      0.8 + 0.2*sin(3.14*t),       // Red: high with subtle variation
+      0.2*t*t,                     // Green: quadratic (low)
+      0.6 - 0.3*cos(3.14*t*2.0)    // Blue: mid-range with variation
+    );
+  }
+  
+  // Palette 4: Green-blue - Aquatic/forest tones
+  vec3 palette4(float t) {
+    return vec3(
+      0.2*sin(3.14*t*2.0),      // Red: low with variation
+      0.5 + 0.5*sin(6.28*t),    // Green: full range cycle
+      0.5 + 0.3*sin(9.42*t)     // Blue: fast cycling with high bias
+    );
+  }
+  
+  // Palette 5: Warm (orange-red) - Fire-like warmth
+  vec3 palette5(float t) {
+    return vec3(
+      0.8 + 0.2*sin(t),       // Red: high with subtle variation
+      0.4 + 0.3*sin(t*2.0),   // Green: mid with faster variation
+      0.1 + 0.1*sin(t*3.0)    // Blue: low with fastest variation
+    );
+  }
+  
+  // Palette 6: Polar glow - Aurora borealis effect
+  vec3 palette6(float t) {
+    return vec3(
+      0.1 + 0.4*sin(t*3.14),       // Red: low
+      0.3 + 0.6*sin(t*3.14+1.0),   // Green: dominant with phase shift
+      0.7 + 0.3*sin(t*3.14+2.0)    // Blue: high with phase shift
+    );
+  }
+  
+  // Palette 7: Cyan-magenta - Retro tech look
+  vec3 palette7(float t) {
+    float s = t*2.0;  // Faster cycling
+    return vec3(
+      0.5 - 0.5*cos(s),        // Red: cosine wave
+      0.5 - 0.5*cos(s+2.0),    // Green: phase-shifted
+      0.5 - 0.5*cos(s+4.0)     // Blue: phase-shifted
+    );
+  }
+  
+  // Palette 8: Desert - Earthy tones with sand and clay
+  vec3 palette8(float t) {
+    return vec3(
+      0.5 + 0.5*pow(t, 0.4),   // Red: dominant (sand)
+      0.3 + 0.3*pow(t, 1.2),   // Green: mid-range
+      0.2 + 0.1*pow(t, 2.5)    // Blue: subtle
+    );
+  }
+  
+  // Palette 9: Underwater - Deep ocean blues and teals
+  vec3 palette9(float t) {
+    return vec3(
+      0.1 + 0.15*sin(t*4.0),         // Red: minimal
+      0.3 + 0.3*sin(t*2.0 + 1.5),    // Green: medium with phase shift
+      0.5 + 0.5*sin(t + 1.0)         // Blue: dominant with slow variation
+    );
+  }
+  
+  // Palette 10: Metallic - Shimmering metal effect
+  vec3 palette10(float t) {
+    float v = 0.6 + 0.4*sin(t*15.0);  // High-frequency shimmer
+    return vec3(
+      v * (0.3 + 0.3*sin(t*4.0)),           // Red with shimmer
+      v * (0.3 + 0.3*sin(t*4.0 + 2.0)),     // Green with shimmer and phase
+      v * (0.3 + 0.3*sin(t*4.0 + 4.0))      // Blue with shimmer and phase
+    );
+  }
+
+  // Main palette selection function - uses switch statement for clarity
+  vec3 getPalette(float t, int idx) {
+    switch(idx) {
+      case 0: return palette1(t);  // Rainbow
+      case 1: return palette2(t);  // Blue-yellow
+      case 2: return palette3(t);  // Red-violet
+      case 3: return palette4(t);  // Green-blue
+      case 4: return palette5(t);  // Warm (orange-red)
+      case 5: return palette6(t);  // Polar glow
+      case 6: return palette7(t);  // Cyan-magenta
+      case 7: return palette8(t);  // Desert
+      case 8: return palette9(t);  // Underwater
+      default: return palette10(t); // Metallic
+    }
   }
 
   void main(){
