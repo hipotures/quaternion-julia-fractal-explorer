@@ -49,7 +49,7 @@ export const cameraState = {
     defaultFocalLength: CONFIG.CAMERA.DEFAULT_FOCAL_LENGTH, // Default focal length used for reset (R key)
 
     // --- Movement Modifiers ---
-    decelerationEnabled: true, // Toggle for applying deceleration to scroll movement (D key)
+    decelerationEnabled: true // We're keeping this property but we're not exposing it in the UI anymore
 };
 
 // Expose state globally for debugging/compatibility
