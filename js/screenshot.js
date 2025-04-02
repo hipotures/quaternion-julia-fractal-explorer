@@ -3,7 +3,7 @@ import { fractalState, qualitySettings, colorSettings, crossSectionSettings } fr
 import { camera, cameraState } from './camera.js';
 import { CONFIG } from './config.js';
 
-// Funkcja pozyskująca stan fraktala (podobna do registerTourPoint z tourRecording.js)
+// Function to get fractal state (similar to registerTourPoint from tourRecording.js)
 export function getFractalState() {
     return {
         fractalParams: {
@@ -49,12 +49,12 @@ export function getFractalState() {
     };
 }
 
-// Funkcja do prawidłowego skalowania z zachowaniem proporcji
+// Function for proper scaling while maintaining aspect ratio
 function rescaleImage(canvas, maxWidth, maxHeight) {
     const originalWidth = canvas.width;
     const originalHeight = canvas.height;
     
-    // Jeśli skalowanie jest wyłączone lub nie ma ograniczeń, zwróć oryginalne wymiary
+    // If scaling is disabled or there are no constraints, return original dimensions
     if (!CONFIG.SCREENSHOT.RESCALING.ENABLED || !maxWidth || !maxHeight) {
         return {
             width: originalWidth,
@@ -63,23 +63,23 @@ function rescaleImage(canvas, maxWidth, maxHeight) {
         };
     }
     
-    // Oblicz współczynniki skalowania
+    // Calculate scaling factors
     const widthRatio = maxWidth / originalWidth;
     const heightRatio = maxHeight / originalHeight;
     
-    // Wybierz mniejszy współczynnik (bardziej ograniczający)
+    // Choose the smaller factor (more restrictive)
     const ratio = Math.min(widthRatio, heightRatio);
     
-    // Oblicz nowe wymiary
+    // Calculate new dimensions
     const newWidth = Math.floor(originalWidth * ratio);
     const newHeight = Math.floor(originalHeight * ratio);
     
-    // Utwórz nowy canvas o odpowiednim rozmiarze
+    // Create a new canvas with appropriate size
     const scaledCanvas = document.createElement('canvas');
     scaledCanvas.width = newWidth;
     scaledCanvas.height = newHeight;
     
-    // Przeskaluj obraz
+    // Scale the image
     const ctx = scaledCanvas.getContext('2d');
     ctx.drawImage(canvas, 0, 0, newWidth, newHeight);
     
@@ -90,7 +90,7 @@ function rescaleImage(canvas, maxWidth, maxHeight) {
     };
 }
 
-// Funkcja do zarządzania elementami UI podczas zrzutu ekranu
+// Function to manage UI elements during screenshot
 let originalUIState = null;
 
 function hideUIForScreenshot() {
@@ -101,7 +101,7 @@ function hideUIForScreenshot() {
     const tourStatus = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
     const recordingIndicator = document.getElementById(CONFIG.UI.SELECTORS.RECORDING_INDICATOR);
     
-    // Zapisz aktualny stan UI
+    // Save current UI state
     originalUIState = {
         menuPanel: menuPanel ? menuPanel.style.display : null,
         statsPanel: statsPanel ? statsPanel.style.display : null,
@@ -111,7 +111,7 @@ function hideUIForScreenshot() {
         recordingIndicator: recordingIndicator ? recordingIndicator.style.display : null
     };
     
-    // Ukryj wszystkie elementy UI
+    // Hide all UI elements
     if (menuPanel) menuPanel.style.display = 'none';
     if (statsPanel) statsPanel.style.display = 'none';
     if (presetMenu) presetMenu.style.display = 'none';
@@ -130,7 +130,7 @@ function restoreUIAfterScreenshot() {
     const tourStatus = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
     const recordingIndicator = document.getElementById(CONFIG.UI.SELECTORS.RECORDING_INDICATOR);
     
-    // Przywróć oryginalny stan UI
+    // Restore original UI state
     if (menuPanel && originalUIState.menuPanel) menuPanel.style.display = originalUIState.menuPanel;
     if (statsPanel && originalUIState.statsPanel) statsPanel.style.display = originalUIState.statsPanel;
     if (presetMenu && originalUIState.presetMenu) presetMenu.style.display = originalUIState.presetMenu;
@@ -141,30 +141,30 @@ function restoreUIAfterScreenshot() {
     originalUIState = null;
 }
 
-// Zapisz stan fraktala do pliku JSON
+// Save fractal state to JSON file
 async function saveFractalState(baseFilename) {
     if (!CONFIG.SCREENSHOT.SAVE_STATE) return;
     
     try {
-        // Pobierz stan fraktala
+        // Get fractal state
         const state = getFractalState();
         
-        // Konwertuj do JSON
+        // Convert to JSON
         const jsonContent = JSON.stringify(state, null, 2);
         
-        // Utwórz plik do pobrania
+        // Create file for download
         const jsonFilename = `${baseFilename}.json`;
         const blob = new Blob([jsonContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         
-        // Pobierz plik
+        // Download file
         const link = document.createElement('a');
         link.href = url;
         link.download = jsonFilename;
         document.body.appendChild(link);
         link.click();
         
-        // Posprzątaj
+        // Cleanup
         setTimeout(() => {
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
@@ -176,42 +176,42 @@ async function saveFractalState(baseFilename) {
     }
 }
 
-// Funkcja do zrzutu całego widocznego obszaru (z UI)
+// Function to take a screenshot of the entire visible area (with UI)
 async function takeFullPageScreenshot() {
     try {
-        // Użyjemy html2canvas do zrzutu całej strony
-        // Najpierw przygotujmy canvas dla fraktala
+        // We'll capture the entire page
+        // First, prepare canvas for the fractal
         const width = window.innerWidth;
         const height = window.innerHeight;
         
-        // Utwórz nowy canvas do rysowania
+        // Create a new canvas for drawing
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = width;
         tempCanvas.height = height;
         const ctx = tempCanvas.getContext('2d');
         
-        // Narysuj WebGL canvas (fraktal)
+        // Draw the WebGL canvas (fractal)
         ctx.drawImage(renderer.domElement, 0, 0);
         
-        // Pobieramy wszystkie elementy UI
+        // Get all UI elements
         const elements = document.querySelectorAll('div, span, button, p');
         
-        // Filtrujemy do tych, które są widoczne i dodajemy je do canvasa
+        // Filter to those that are visible and add them to the canvas
         for (const el of elements) {
-            if (el.offsetParent === null) continue; // Element jest ukryty
+            if (el.offsetParent === null) continue; // Element is hidden
             
             const rect = el.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) continue;
             
-            // Tworzymy "zrzut" elementu jako canvas
-            // W rzeczywistości rysujemy odpowiednie kolory tła i obramowania
+            // Create a "snapshot" of the element as canvas
+            // In reality, we're drawing appropriate background colors and borders
             ctx.save();
             ctx.fillStyle = getComputedStyle(el).backgroundColor;
             if (ctx.fillStyle !== 'rgba(0, 0, 0, 0)') {
                 ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
             }
             
-            // Jeśli element ma tekst, dodajemy go
+            // If the element has text, add it
             if (el.innerText) {
                 const style = getComputedStyle(el);
                 ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
@@ -219,7 +219,7 @@ async function takeFullPageScreenshot() {
                 ctx.fillText(el.innerText, rect.left + 5, rect.top + parseInt(style.fontSize));
             }
             
-            // Rysujemy obramowanie, jeśli istnieje
+            // Draw border if it exists
             const borderWidth = parseInt(getComputedStyle(el).borderWidth);
             if (borderWidth > 0) {
                 ctx.strokeStyle = getComputedStyle(el).borderColor;
@@ -237,7 +237,7 @@ async function takeFullPageScreenshot() {
     }
 }
 
-// Główna funkcja wykonująca zrzut ekranu
+// Main function for taking a screenshot
 export async function takeScreenshot(includeUI = false) {
     if (!renderer || !renderer.domElement) {
         console.error("Canvas not available");
@@ -245,13 +245,13 @@ export async function takeScreenshot(includeUI = false) {
     }
     
     try {
-        // Zapisz obecne ustawienie preserveDrawingBuffer
+        // Save current preserveDrawingBuffer setting
         const originalPreserveDrawingBuffer = renderer.preserveDrawingBuffer;
         
-        // Włącz preserveDrawingBuffer aby umożliwić poprawne zrzuty ekranu WebGL
+        // Enable preserveDrawingBuffer to allow proper WebGL screenshots
         renderer.preserveDrawingBuffer = true;
         
-        // Wymuś przerysowanie sceny przed zrzutem ekranu
+        // Force scene redraw before screenshot
         if (scene) {
             renderer.render(scene, camera);
         }
@@ -260,43 +260,43 @@ export async function takeScreenshot(includeUI = false) {
         
         if (includeUI) {
             try {
-                // Próba zrzutu całego ekranu z UI
+                // Attempt to capture full screen with UI
                 screenshotData = await takeFullPageScreenshot();
             } catch (error) {
                 console.error("Full page screenshot failed, falling back to canvas only:", error);
-                // Fallback do zwykłego zrzutu canvas
+                // Fallback to regular canvas screenshot
                 includeUI = false;
             }
         }
         
         if (!includeUI) {
-            // Ukryj UI przed zrzutem
+            // Hide UI before screenshot
             hideUIForScreenshot();
             
-            // Daj czas na przerysowanie strony bez UI
+            // Give time for page to redraw without UI
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Wymuś ponowne przerysowanie sceny przed zrzutem ekranu
+            // Force scene redraw again before screenshot
             if (scene) {
                 renderer.render(scene, camera);
             }
             
-            // Wymiary canvas
+            // Canvas dimensions
             const canvas = renderer.domElement;
             
-            // Utwórz nowy Canvas 2D aby skopiować zawartość WebGL canvas
+            // Create new 2D Canvas to copy WebGL canvas content
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
             const ctx = tempCanvas.getContext('2d');
             
-            // Kopiuj zawartość canvas WebGL do canvas 2D
+            // Copy WebGL canvas content to 2D canvas
             ctx.drawImage(canvas, 0, 0);
             
             screenshotData = tempCanvas;
         }
         
-        // Wykonaj zrzut ekranu (ewentualnie przeskalowany)
+        // Take screenshot (potentially scaled)
         if (CONFIG.SCREENSHOT.RESCALING.ENABLED) {
             const scaled = rescaleImage(
                 screenshotData, 
@@ -306,40 +306,40 @@ export async function takeScreenshot(includeUI = false) {
             screenshotData = scaled.canvas;
         }
         
-        // Znajdź format na podstawie konfiguracji
+        // Find format based on configuration
         const formatConfig = CONFIG.SCREENSHOT.FORMATS.find(
             f => f.id === CONFIG.SCREENSHOT.DEFAULT_FORMAT
         ) || CONFIG.SCREENSHOT.FORMATS[0];
         
-        // Opcje konwersji dla formatów z możliwością kompresji
+        // Conversion options for formats with compression
         const options = formatConfig.quality ? { quality: formatConfig.quality } : undefined;
         
-        // Pozyskaj dane obrazu (używając canvas 2D, który zawsze działa poprawnie z toDataURL)
+        // Get image data (using 2D canvas, which always works correctly with toDataURL)
         const dataURL = screenshotData.toDataURL(formatConfig.mime, options);
         
-        // Przywróć oryginalne ustawienie preserveDrawingBuffer
+        // Restore original preserveDrawingBuffer setting
         renderer.preserveDrawingBuffer = originalPreserveDrawingBuffer;
         
-        // Generuj nazwę pliku z timestampem
+        // Generate filename with timestamp
         const now = new Date();
         const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`;
         const baseFilename = `qjf_${timestamp}`;
         const filename = `${baseFilename}.${formatConfig.extension}`;
         
-        // Utwórz link do pobrania
+        // Create download link
         const link = document.createElement('a');
         link.href = dataURL;
         link.download = filename;
         link.style.display = 'none';
         document.body.appendChild(link);
         
-        // Kliknij link, aby pobrać
+        // Click link to download
         link.click();
         
-        // Zapisz stan fraktala do pliku JSON
+        // Save fractal state to JSON file
         await saveFractalState(baseFilename);
         
-        // Posprzątaj
+        // Cleanup
         setTimeout(() => {
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
@@ -351,17 +351,17 @@ export async function takeScreenshot(includeUI = false) {
         console.error("Error taking screenshot:", error);
         return false;
     } finally {
-        // Zawsze przywróć UI, jeśli było ukryte
+        // Always restore UI if it was hidden
         if (!includeUI) {
             restoreUIAfterScreenshot();
         }
     }
 }
 
-// Funkcja pomocnicza do obsługi klawiszy screenshot
+// Helper function for handling screenshot keys
 export function handleScreenshotKeys(key, isShiftPressed) {
     if (key.toLowerCase() === CONFIG.SCREENSHOT.KEYS.TAKE_SCREENSHOT) {
-        // Duża litera S z shiftem - z UI, mała s - bez UI
+        // Capital S with shift - with UI, lowercase s - without UI
         const includeUI = isShiftPressed;
         console.log(`Taking screenshot ${includeUI ? 'with' : 'without'} UI...`);
         takeScreenshot(includeUI);
