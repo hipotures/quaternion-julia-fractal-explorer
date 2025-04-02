@@ -21,8 +21,7 @@ let showMenu = true; // Assume menu is visible initially
 
 // Updates the content of the statistics panel
 export function updateStatsPanel(forceUpdate = false) {
-    // Expose globally for other modules to force updates
-    window.updateStatsPanel = updateStatsPanel;
+    // No longer exposing to window - use proper imports instead
     
     // Check if we should allow updates even when stats panel is hidden
     if ((!showStats && !forceUpdate) || !statsElement) return; // Don't update if hidden or not found

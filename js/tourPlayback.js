@@ -2,6 +2,7 @@ import { tourState } from './tour.js';
 import { cameraState } from './camera.js';
 import { fractalState, qualitySettings, colorSettings, crossSectionSettings } from './fractal.js';
 import { CONFIG } from './config.js'; // Import configuration values
+import { updateStatsPanel } from './ui.js'; // Import updateStatsPanel for direct access
 
 // --- Tour Playback Functions ---
 
@@ -266,9 +267,7 @@ async function applyTourPoint(point) {
     if (point.camera) applyCameraSettings(point.camera);
     
     // Force update stats panel to reflect changes
-    if (window.updateStatsPanel) {
-        window.updateStatsPanel(true);
-    }
+    updateStatsPanel(true);
 }
 
 // Apply fractal parameters from a tour point
