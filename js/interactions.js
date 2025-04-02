@@ -257,9 +257,9 @@ function handleKeyDown(e) {
     // Delegate to the appropriate handler based on key group
     const key = e.key.toLowerCase();
     
-    // Screenshot keys - check first to handle shift key correctly
+    // Screenshot key
     if (key === CONFIG.SCREENSHOT.KEYS.TAKE_SCREENSHOT) {
-        handleScreenshotKeys(e.key, e.shiftKey);
+        handleScreenshotKeys(e.key);
         return;
     }
     

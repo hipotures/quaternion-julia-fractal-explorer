@@ -176,112 +176,10 @@ async function saveFractalState(baseFilename) {
     }
 }
 
-// Function to try to capture UI elements using more sophisticated methods
-async function takeFullPageScreenshot() {
-    try {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        
-        // Create a canvas with the size of the viewport
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
-        const ctx = tempCanvas.getContext('2d');
-        
-        // First draw the WebGL canvas (fractal)
-        ctx.drawImage(renderer.domElement, 0, 0);
-        
-        // Try to capture the entire HTML document
-        // Get every visible element and try to render it on canvas
-        const elementsToCapture = document.querySelectorAll('div, span, button, p, h1, h2, h3, h4, h5, h6');
-        
-        Array.from(elementsToCapture)
-            .filter(el => {
-                // Only consider visible elements
-                const style = window.getComputedStyle(el);
-                const rect = el.getBoundingClientRect();
-                return style.display !== 'none' && 
-                       style.visibility !== 'hidden' && 
-                       style.opacity !== '0' &&
-                       rect.width > 0 && 
-                       rect.height > 0;
-            })
-            .sort((a, b) => {
-                // Sort by z-index to draw layers correctly
-                const styleA = window.getComputedStyle(a);
-                const styleB = window.getComputedStyle(b);
-                return (parseInt(styleA.zIndex) || 0) - (parseInt(styleB.zIndex) || 0);
-            })
-            .forEach(el => {
-                try {
-                    const rect = el.getBoundingClientRect();
-                    const style = window.getComputedStyle(el);
-                    
-                    // Draw background if present and not transparent
-                    if (style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                        ctx.fillStyle = style.backgroundColor;
-                        ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-                    }
-                    
-                    // Draw borders if present
-                    if (parseInt(style.borderWidth) > 0) {
-                        ctx.strokeStyle = style.borderColor;
-                        ctx.lineWidth = parseInt(style.borderWidth);
-                        ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
-                    }
-                    
-                    // Add text content if present
-                    if (el.textContent && el.textContent.trim() !== '') {
-                        ctx.fillStyle = style.color;
-                        ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-                        ctx.textBaseline = 'top';
-                        
-                        // Calculate text position with padding
-                        const paddingLeft = parseInt(style.paddingLeft) || 0;
-                        const paddingTop = parseInt(style.paddingTop) || 0;
-                        const x = rect.left + paddingLeft;
-                        const y = rect.top + paddingTop;
-                        
-                        // Get text lines
-                        const words = el.textContent.split(' ');
-                        let line = '';
-                        let lineY = y;
-                        const lineHeight = parseInt(style.lineHeight) || parseInt(style.fontSize) * 1.2;
-                        
-                        // Handle multi-line text
-                        for (let n = 0; n < words.length; n++) {
-                            const testLine = line + words[n] + ' ';
-                            const metrics = ctx.measureText(testLine);
-                            if (x + metrics.width > rect.right && n > 0) {
-                                ctx.fillText(line, x, lineY);
-                                line = words[n] + ' ';
-                                lineY += lineHeight;
-                            } else {
-                                line = testLine;
-                            }
-                        }
-                        ctx.fillText(line, x, lineY);
-                    }
-                    
-                    // Try to capture images within elements
-                    const images = el.querySelectorAll('img');
-                    images.forEach(img => {
-                        if (img.complete && img.naturalWidth > 0) {
-                            const imgRect = img.getBoundingClientRect();
-                            ctx.drawImage(img, imgRect.left, imgRect.top, imgRect.width, imgRect.height);
-                        }
-                    });
-                    
-                } catch (err) {
-                    console.warn("Error capturing element:", err);
-                }
-            });
-        
-        return tempCanvas;
-    } catch (error) {
-        console.error("Error in full page screenshot:", error);
-        throw error;
-    }
+// For future reference - this function is no longer used since we only support fractal-only screenshots
+function takeFullPageScreenshot() {
+    // Function removed - we don't support UI screenshots anymore
+    throw new Error("UI screenshots not supported - use browser's screenshot tool instead");
 }
 
 // Main function for taking a screenshot
@@ -405,12 +303,11 @@ export async function takeScreenshot(includeUI = false) {
     }
 }
 
-// Helper function for handling screenshot keys
-export function handleScreenshotKeys(key, isShiftPressed) {
+// Helper function for handling screenshot keys - only support for screenshots without UI
+export function handleScreenshotKeys(key) {
     if (key.toLowerCase() === CONFIG.SCREENSHOT.KEYS.TAKE_SCREENSHOT) {
-        // Capital S with shift - with UI, lowercase s - without UI
-        const includeUI = isShiftPressed;
-        console.log(`Taking screenshot ${includeUI ? 'with' : 'without'} UI...`);
-        takeScreenshot(includeUI);
+        console.log("Taking screenshot of fractal...");
+        // Always call with includeUI = false
+        takeScreenshot(false);
     }
 }

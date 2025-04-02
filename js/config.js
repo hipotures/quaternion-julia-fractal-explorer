@@ -183,8 +183,7 @@ export const CONFIG = {
         },
         SAVE_STATE: true,              // Whether to save fractal state as a JSON file
         KEYS: {
-            TAKE_SCREENSHOT: 's',
-            TAKE_SCREENSHOT_WITH_UI: 'S'
+            TAKE_SCREENSHOT: 's'       // Key to take screenshot of the fractal only (UI elements are hidden)
         }
     }
 };

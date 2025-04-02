@@ -69,6 +69,7 @@ The application features two interface panels:
 |---------|--------|-------------------|
 | M | Show/hide controls menu | - |
 | P | Show/hide stats panel | - |
+| S | Take a screenshot of the fractal | - |
 | V | Start/stop video recording | "REC" indicator when active |
 | Q | Change recording quality | "Rec quality" |
 | T | Open tour recording menu | - |
