@@ -47,7 +47,7 @@ The application features two interface panels:
 ### Fractal Parameters
 | Control | Action | Stats Panel Value |
 |---------|--------|-------------------|
-| R | Reset fractal & camera | "c" parameter values |
+| R | Reset fractal parameters | "c" parameter values |
 | 0 | Toggle slice animation | "Slice", "Slice anim" |
 | < / > | Decrease/increase slice amplitude | "Slice range" |
 | 9 | Cycle through cross-section modes | "Cross-section" |
