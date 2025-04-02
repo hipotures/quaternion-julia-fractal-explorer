@@ -64,56 +64,47 @@ function estimateSimpleDistance(pos) {
 
 // --- Event Handlers ---
 
-function handleKeyDown(e) {
-    // Check for escape key to stop tour playback (this takes precedence over all other keys)
-    if (e.key === CONFIG.KEYS.ESCAPE) {
-        if (isTourPlaying()) {
-            stopTourPlayback();
-            return;
-        }
-    }
-    
-    // Ignore inputs if tour is playing (only Escape works during tour)
-    if (isTourPlaying()) return;
-    
-    // Ignore inputs if paused, except for the pause key itself
-    if (isPaused() && e.key !== CONFIG.KEYS.SPACE) return;
+// --- Key handlers for different functional groups ---
 
-    if (e.key === CONFIG.KEYS.CONTROL) {
-        isCtrlPressed = true;
-        return; // Don't process Control key further
-    }
-
-    switch (e.key.toLowerCase()) { // Use toLowerCase for case-insensitivity
-        // --- UI ---
+// Handle UI-related keys (stats, menu, tour)
+function handleUIKeys(key) {
+    switch (key.toLowerCase()) {
         case CONFIG.KEYS.TOGGLE_STATS:
             toggleStats();
             break;
         case CONFIG.KEYS.TOGGLE_MENU:
             toggleMenu();
             break;
+        case CONFIG.KEYS.TOGGLE_TOUR:
+            toggleTourMenu();
+            break;
+    }
+}
 
-        // --- Camera Rotation ---
+// Handle camera navigation keys (arrows, zoom)
+function handleNavigationKeys(key, isCtrlModifier) {
+    switch (key.toLowerCase()) {
+        // Camera Rotation
         case CONFIG.KEYS.ARROW_LEFT:
-            cameraState.yaw += isCtrlPressed ? 0.25 : 0.05;
+            cameraState.yaw += isCtrlModifier ? 0.25 : 0.05;
             updateCameraRotation();
             break;
         case CONFIG.KEYS.ARROW_RIGHT:
-            cameraState.yaw -= isCtrlPressed ? 0.25 : 0.05;
+            cameraState.yaw -= isCtrlModifier ? 0.25 : 0.05;
             updateCameraRotation();
             break;
         case CONFIG.KEYS.ARROW_UP:
-            cameraState.pitch += isCtrlPressed ? 0.25 : 0.05;
+            cameraState.pitch += isCtrlModifier ? 0.25 : 0.05;
             // Clamping is handled within updateCameraRotation
             updateCameraRotation();
             break;
         case CONFIG.KEYS.ARROW_DOWN:
-            cameraState.pitch -= isCtrlPressed ? 0.25 : 0.05;
+            cameraState.pitch -= isCtrlModifier ? 0.25 : 0.05;
             // Clamping is handled within updateCameraRotation
             updateCameraRotation();
             break;
-
-        // --- Camera Zoom (Focal Length) ---
+            
+        // Camera Zoom (Focal Length)
         case CONFIG.KEYS.PLUS:
         case CONFIG.KEYS.EQUALS: // Handle '=' key often paired with '+'
             cameraState.focalLength = Math.min(24.0, cameraState.focalLength + 0.1);
@@ -123,39 +114,18 @@ function handleKeyDown(e) {
             cameraState.focalLength = Math.max(0.1, cameraState.focalLength - 0.1);
             updateCameraState(); // Update uniforms
             break;
-
-        // --- Camera Orbital Radius (disabled) ---
-        // Z and X keys no longer perform any function
+            
+        // Deprecated keys (kept for backward compatibility)
         case 'x':
         case 'z':
             // Functionality removed
             break;
+    }
+}
 
-        // --- Reset ---
-        case CONFIG.KEYS.RESET:
-            resetFractalParams();
-            cameraState.focalLength = cameraState.defaultFocalLength;
-            // Trigger return to start animation instead of immediate reset
-            cameraState.isReturningToStart = true;
-            startTargetAnimation(cameraState.initialCenter);
-            cameraState.moveVelocity = 0; // Stop movement
-            cameraState.isMovingForward = false;
-            break;
-
-        // --- Animation Toggles ---
-        case CONFIG.KEYS.TOGGLE_ANIMATION:
-            cameraState.animationEnabled = !cameraState.animationEnabled;
-            console.log("Animations:", cameraState.animationEnabled ? "ON" : "OFF");
-            break;
-        case CONFIG.KEYS.TOGGLE_SLICE_ANIMATION:
-            // When toggling, make sure to store the current phase/value
-            // so animation can continue from exactly the same point
-            toggleSliceAnimation();
-            // No need to do anything special - the current value will remain in sliceValue
-            // and not change when animation is off
-            break;
-
-        // --- Quality/Rendering ---
+// Handle quality/rendering settings keys
+function handleQualityKeys(key) {
+    switch (key.toLowerCase()) {
         case CONFIG.KEYS.INCREASE_ITERATIONS:
             changeIterations(20);
             break;
@@ -180,12 +150,16 @@ function handleKeyDown(e) {
         case CONFIG.KEYS.TOGGLE_ADAPTIVE_STEPS:
             toggleAdaptiveSteps();
             break;
+    }
+}
+
+// Handle cross-section related keys
+function handleCrossSectionKeys(key) {
+    switch (key.toLowerCase()) {
         case CONFIG.KEYS.CYCLE_CLIP_MODE:
-            // Cyklicznie przełączamy tryby: OFF -> METHOD 1 -> METHOD 2 -> OFF
             cycleClipMode();
             break;
         case CONFIG.KEYS.DECREASE_CLIP_DISTANCE:
-            // Only change clip distance if cross section is enabled
             if (crossSectionSettings.clipMode > 0) {
                 decreaseClipDistance();
             } else {
@@ -193,51 +167,123 @@ function handleKeyDown(e) {
             }
             break;
         case CONFIG.KEYS.INCREASE_CLIP_DISTANCE:
-            // Only change clip distance if cross section is enabled
             if (crossSectionSettings.clipMode > 0) {
                 increaseClipDistance();
             } else {
                 console.log("Cross-Section is OFF - enable it with '9' key first");
             }
             break;
-            
-        // --- Slice Amplitude Control ---
+    }
+}
+
+// Handle slice-related keys
+function handleSliceKeys(key) {
+    switch (key.toLowerCase()) {
+        case CONFIG.KEYS.TOGGLE_SLICE_ANIMATION:
+            toggleSliceAnimation();
+            break;
         case '<':
-        case CONFIG.KEYS.DECREASE_SLICE_AMPLITUDE: // For keyboards that require shift for < character
+        case CONFIG.KEYS.DECREASE_SLICE_AMPLITUDE: 
             changeSliceAmplitude(-0.1);
             break;
         case '>':
-        case CONFIG.KEYS.INCREASE_SLICE_AMPLITUDE: // For keyboards that require shift for > character
+        case CONFIG.KEYS.INCREASE_SLICE_AMPLITUDE:
             changeSliceAmplitude(0.1);
             break;
+    }
+}
 
-        // --- Pause / Stop Movement ---
-        case CONFIG.KEYS.SPACE:
-            // Stop any forward/backward movement immediately
+// Handle system control keys (reset, animation toggles, recording)
+function handleSystemKeys(key) {
+    switch (key.toLowerCase()) {
+        // Reset
+        case CONFIG.KEYS.RESET:
+            resetFractalParams();
+            cameraState.focalLength = cameraState.defaultFocalLength;
+            cameraState.isReturningToStart = true;
+            startTargetAnimation(cameraState.initialCenter);
             cameraState.moveVelocity = 0;
             cameraState.isMovingForward = false;
-            // Toggle pause state (handled in main.js)
-            togglePause();
             break;
-
-        // --- Deceleration Toggle ---
+            
+        // Animation toggles
+        case CONFIG.KEYS.TOGGLE_ANIMATION:
+            cameraState.animationEnabled = !cameraState.animationEnabled;
+            console.log("Animations:", cameraState.animationEnabled ? "ON" : "OFF");
+            break;
         case CONFIG.KEYS.TOGGLE_DECELERATION:
             cameraState.decelerationEnabled = !cameraState.decelerationEnabled;
             console.log("Deceleration:", cameraState.decelerationEnabled ? "ON" : "OFF");
             break;
             
-        // --- Recording Controls ---
+        // Pause / movement
+        case CONFIG.KEYS.SPACE:
+            cameraState.moveVelocity = 0;
+            cameraState.isMovingForward = false;
+            togglePause();
+            break;
+            
+        // Recording controls
         case CONFIG.KEYS.TOGGLE_RECORDING:
             toggleRecording();
             break;
         case CONFIG.KEYS.CYCLE_QUALITY:
             cycleQuality();
             break;
-            
-        // --- Tour Mode ---
-        case CONFIG.KEYS.TOGGLE_TOUR:
-            toggleTourMenu();
-            break;
+    }
+}
+
+function handleKeyDown(e) {
+    // Check for escape key to stop tour playback (this takes precedence over all other keys)
+    if (e.key === CONFIG.KEYS.ESCAPE) {
+        if (isTourPlaying()) {
+            stopTourPlayback();
+            return;
+        }
+    }
+    
+    // Ignore inputs if tour is playing (only Escape works during tour)
+    if (isTourPlaying()) return;
+    
+    // Ignore inputs if paused, except for the pause key itself
+    if (isPaused() && e.key !== CONFIG.KEYS.SPACE) return;
+
+    if (e.key === CONFIG.KEYS.CONTROL) {
+        isCtrlPressed = true;
+        return; // Don't process Control key further
+    }
+
+    // Delegate to the appropriate handler based on key group
+    const key = e.key.toLowerCase();
+    
+    // UI controls
+    if ([CONFIG.KEYS.TOGGLE_STATS, CONFIG.KEYS.TOGGLE_MENU, CONFIG.KEYS.TOGGLE_TOUR].includes(key)) {
+        handleUIKeys(key);
+    }
+    // Navigation controls
+    else if ([CONFIG.KEYS.ARROW_LEFT, CONFIG.KEYS.ARROW_RIGHT, CONFIG.KEYS.ARROW_UP, CONFIG.KEYS.ARROW_DOWN, 
+              CONFIG.KEYS.PLUS, CONFIG.KEYS.EQUALS, CONFIG.KEYS.MINUS, 'z', 'x'].includes(key)) {
+        handleNavigationKeys(key, isCtrlPressed);
+    }
+    // Quality controls
+    else if ([CONFIG.KEYS.INCREASE_ITERATIONS, CONFIG.KEYS.DECREASE_ITERATIONS, CONFIG.KEYS.TOGGLE_SHADOWS,
+              CONFIG.KEYS.TOGGLE_AO, CONFIG.KEYS.TOGGLE_SMOOTH_COLOR, CONFIG.KEYS.CHANGE_PALETTE,
+              CONFIG.KEYS.TOGGLE_SPECULAR, CONFIG.KEYS.TOGGLE_ADAPTIVE_STEPS].includes(key)) {
+        handleQualityKeys(key);
+    }
+    // Cross-section controls
+    else if ([CONFIG.KEYS.CYCLE_CLIP_MODE, CONFIG.KEYS.DECREASE_CLIP_DISTANCE, CONFIG.KEYS.INCREASE_CLIP_DISTANCE].includes(key)) {
+        handleCrossSectionKeys(key);
+    }
+    // Slice controls
+    else if ([CONFIG.KEYS.TOGGLE_SLICE_ANIMATION, '<', '>', CONFIG.KEYS.DECREASE_SLICE_AMPLITUDE, 
+              CONFIG.KEYS.INCREASE_SLICE_AMPLITUDE].includes(key)) {
+        handleSliceKeys(key);
+    }
+    // System controls
+    else if ([CONFIG.KEYS.RESET, CONFIG.KEYS.TOGGLE_ANIMATION, CONFIG.KEYS.SPACE, CONFIG.KEYS.TOGGLE_DECELERATION,
+              CONFIG.KEYS.TOGGLE_RECORDING, CONFIG.KEYS.CYCLE_QUALITY].includes(key)) {
+        handleSystemKeys(key);
     }
 }
 
