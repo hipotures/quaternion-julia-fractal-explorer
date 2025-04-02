@@ -67,7 +67,7 @@ export function startTourPlayback(tourData) {
     // Force hide preset menu immediately - CRITICAL FIX
     const presetMenuElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
     if (presetMenuElement) {
-        // Stosujemy zarówno display jak i visibility aby zapewnić całkowite ukrycie
+        // Apply both display and visibility to ensure complete hiding
         presetMenuElement.style.display = 'none';
         presetMenuElement.style.visibility = 'hidden';
         console.log("Force hiding preset menu via direct DOM manipulation");
@@ -75,7 +75,7 @@ export function startTourPlayback(tourData) {
         console.warn("Preset menu element not found for direct hiding!");
     }
     
-    // Dodatkowa próba ukrycia z opóźnieniem dla zapewnienia, że menu zostanie ukryte
+    // Additional attempt to hide with delay to ensure menu will be hidden
     setTimeout(() => {
         const retryElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
         if (retryElement) {
@@ -83,7 +83,7 @@ export function startTourPlayback(tourData) {
             retryElement.style.visibility = 'hidden';
             console.log("Force hiding preset menu after delay");
         }
-    }, 100); // Zwiększamy opóźnienie do 100ms
+    }, CONFIG.TOURS.MENU_HIDE_DELAY); // Using configured delay value
     
     // Initialize playback state
     tourState.isPlaying = true;
@@ -131,7 +131,7 @@ export function stopTourPlayback() {
         tourStatusElement.style.display = 'none';
     }
     
-    // Bezpośrednie przywrócenie widoczności menu presetów
+    // Direct restoration of preset menu visibility
     const presetMenuElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
     if (presetMenuElement && tourState.uiStateBeforePlayback.presetMenuVisible) {
         presetMenuElement.style.display = 'flex';
