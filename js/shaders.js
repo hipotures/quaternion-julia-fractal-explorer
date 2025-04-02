@@ -99,6 +99,9 @@ export const vertexShader = `
 export const fragmentShader = `
   #define MAX_MARCH 256
   #define MAX_DIST  150.0
+  #define HIT_THRESHOLD 0.0001
+  #define SAFE_STEP 0.002
+  #define CROSS_SECTION_THRESHOLD 0.01
 
   uniform vec2  u_resolution;
   uniform float u_time;
@@ -208,7 +211,7 @@ export const fragmentShader = `
           float d = quaternionJuliaDE(pos);
           
           // Simple hit condition
-          if (d < 0.0001)
+          if (d < HIT_THRESHOLD)
               return t;
           
           // Calculate and apply step
@@ -230,9 +233,9 @@ export const fragmentShader = `
           float d = quaternionJuliaDE(pos);
           
           // Hit condition with special handling
-          if (d < 0.0001) {
+          if (d < HIT_THRESHOLD) {
               // Mode 1 ignores the first hit and continues
-              t += 0.002;
+              t += SAFE_STEP;
               continue;
           }
           
@@ -255,13 +258,13 @@ export const fragmentShader = `
           float d = quaternionJuliaDE(pos);
           
           // Hit condition with special handling
-          if (d < 0.0001) {
+          if (d < HIT_THRESHOLD) {
               // Mode 2 only renders points close to the cross-section distance
               float distToPlane = abs(t - u_clipDistance);
-              if (distToPlane < 0.01) {
+              if (distToPlane < CROSS_SECTION_THRESHOLD) {
                   return t; // Only render points in cross-section
               } else {
-                  t += 0.002;
+                  t += SAFE_STEP;
                   continue;
               }
           }
@@ -285,10 +288,10 @@ export const fragmentShader = `
           float d = quaternionJuliaDE(pos);
           
           // Hit condition with special handling
-          if (d < 0.0001) {
+          if (d < HIT_THRESHOLD) {
               // Mode 3 ignores hits beyond the cross-section distance
               if (t > u_clipDistance) {
-                  t += 0.002;
+                  t += SAFE_STEP;
                   continue;
               }
               
@@ -339,7 +342,7 @@ export const fragmentShader = `
       for(int i=0; i<32; i++){
           vec3 p = ro + rd*t;
           float d = quaternionJuliaDE(p);
-          if(d < 0.0005) return 0.0;
+          if(d < HIT_THRESHOLD * 5.0) return 0.0;
           res = min(res, 10.0*d/t);
           t += d;
           if(t > 20.0) break;
