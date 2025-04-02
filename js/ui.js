@@ -81,7 +81,6 @@ export function updateStatsPanel(forceUpdate = false) {
             <div class="stats-category">System</div>
             <b>FPS:</b> ${getFps().toFixed(1)}<br>
             <b>Animations:</b> ${cameraState.animationEnabled ? 'ON' : 'OFF'}<br>
-            <b>Deceleration:</b> ${cameraState.decelerationEnabled ? 'ON' : 'OFF'}<br>
             <b>Recording:</b> ${getRecordingQuality() || 'NORMAL'}<br>
         `;
     }
