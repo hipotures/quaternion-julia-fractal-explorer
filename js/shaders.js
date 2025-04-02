@@ -178,96 +178,148 @@ export const fragmentShader = `
       return u_maxIter;
   }
 
-  // Completely simplified ray marching implementation
+  // Helper function to calculate step size based on distance and adaptivity settings
+  float calculateStepSize(float distance) {
+      if (!u_adaptiveSteps)
+          return distance; // Standard step without adaptivity
+          
+      // Adaptive step size calculation
+      float stepFactor;
+      if (distance < 0.01) {
+          // Very close to surface - use small step for precision
+          stepFactor = 0.5;
+      } else if (distance > 0.5) {
+          // Far from surface - use much larger step for performance
+          stepFactor = 2.0;
+      } else {
+          // Mid-range - more aggressive transition
+          stepFactor = 1.0 + (distance - 0.01) * 1.8; // Linear from 1.0 to ~2.0
+      }
+      
+      return distance * stepFactor;
+  }
+
+  // Standard ray marching mode (no clipping)
+  float rayMarchStandard(vec3 ro, vec3 rd) {
+      float t = 0.0;
+      
+      for (int i = 0; i < MAX_MARCH; i++) {
+          vec3 pos = ro + rd * t;
+          float d = quaternionJuliaDE(pos);
+          
+          // Simple hit condition
+          if (d < 0.0001)
+              return t;
+          
+          // Calculate and apply step
+          t += calculateStepSize(d);
+          
+          if (t > MAX_DIST)
+              break;
+      }
+      
+      return t;
+  }
+  
+  // Cross-section mode 1: Ignore first hit
+  float rayMarchClipMode1(vec3 ro, vec3 rd) {
+      float t = 0.0;
+      
+      for (int i = 0; i < MAX_MARCH; i++) {
+          vec3 pos = ro + rd * t;
+          float d = quaternionJuliaDE(pos);
+          
+          // Hit condition with special handling
+          if (d < 0.0001) {
+              // Mode 1 ignores the first hit and continues
+              t += 0.002;
+              continue;
+          }
+          
+          // Calculate and apply step
+          t += calculateStepSize(d);
+          
+          if (t > MAX_DIST)
+              break;
+      }
+      
+      return t;
+  }
+  
+  // Cross-section mode 2: Only render at specific distance
+  float rayMarchClipMode2(vec3 ro, vec3 rd) {
+      float t = 0.0;
+      
+      for (int i = 0; i < MAX_MARCH; i++) {
+          vec3 pos = ro + rd * t;
+          float d = quaternionJuliaDE(pos);
+          
+          // Hit condition with special handling
+          if (d < 0.0001) {
+              // Mode 2 only renders points close to the cross-section distance
+              float distToPlane = abs(t - u_clipDistance);
+              if (distToPlane < 0.01) {
+                  return t; // Only render points in cross-section
+              } else {
+                  t += 0.002;
+                  continue;
+              }
+          }
+          
+          // Calculate and apply step
+          t += calculateStepSize(d);
+          
+          if (t > MAX_DIST)
+              break;
+      }
+      
+      return t;
+  }
+  
+  // Cross-section mode 3: Ignore hits beyond cross-section plane
+  float rayMarchClipMode3(vec3 ro, vec3 rd) {
+      float t = 0.0;
+      
+      for (int i = 0; i < MAX_MARCH; i++) {
+          vec3 pos = ro + rd * t;
+          float d = quaternionJuliaDE(pos);
+          
+          // Hit condition with special handling
+          if (d < 0.0001) {
+              // Mode 3 ignores hits beyond the cross-section distance
+              if (t > u_clipDistance) {
+                  t += 0.002;
+                  continue;
+              }
+              
+              // Otherwise render as normal
+              return t;
+          }
+          
+          // Calculate and apply step
+          t += calculateStepSize(d);
+          
+          if (t > MAX_DIST)
+              break;
+      }
+      
+      return t;
+  }
+
+  // Main ray marching function - delegates to specialized implementations
   float rayMarch(vec3 ro, vec3 rd) {
-      // For standard mode we use the simplest possible implementation
+      // Delegate to the appropriate ray marching implementation based on clip mode
       if (u_clipMode == 0) {
-          float t = 0.0;
-          for (int i = 0; i < MAX_MARCH; i++) {
-              vec3 pos = ro + rd * t;
-              float d = quaternionJuliaDE(pos);
-              
-              // Simple hit condition
-              if (d < 0.0001) {
-                  return t;
-              }
-              
-              // Standard step
-              if (u_adaptiveSteps) {
-                  float stepFactor = 1.0;
-                  if (d < 0.01) stepFactor = 0.5;
-                  else if (d > 0.5) stepFactor = 2.0;
-                  else stepFactor = 1.0 + (d - 0.01) * 1.8;
-                  t += d * stepFactor;
-              } else {
-                  t += d;
-              }
-              
-              if (t > MAX_DIST) break;
-          }
-          return t;
-      } 
-      // For other modes we use special implementations 
-      else {
-          float t = 0.0;
-          for (int i = 0; i < MAX_MARCH; i++) {
-              vec3 pos = ro + rd * t;
-              float d = quaternionJuliaDE(pos);
-              
-              // Hit condition
-              if (d < 0.0001) {
-                  // Mode 1 - Ignore first hit
-                  if (u_clipMode == 1) {
-                      t += 0.002;
-                      continue;
-                  }
-                  
-                  // Mode 2 - Only render cross-section at specific distance
-                  if (u_clipMode == 2) {
-                      float distToPlane = abs(t - u_clipDistance);
-                      if (distToPlane < 0.01) {
-                          return t; // Only render points in cross-section
-                      } else {
-                          t += 0.002;
-                          continue;
-                      }
-                  }
-                  
-                  // Mode 3 - Ignore hits beyond cross-section plane
-                  if (u_clipMode == 3 && t > u_clipDistance) {
-                      t += 0.002;
-                      continue;
-                  }
-                  
-                  // All other cases - render surface
-                  return t;
-              }
-              
-              // Adaptive step (if enabled)
-              if (u_adaptiveSteps) {
-                  // Adaptive factor - more aggressive implementation
-                  // Near surface - much smaller steps (increases precision)
-                  // Far from surface - much larger steps (increases performance)
-                  float stepFactor;
-                  if (d < 0.01) {
-                      // Very close to surface - use small step for precision
-                      stepFactor = 0.5;
-                  } else if (d > 0.5) {
-                      // Far from surface - use much larger step for performance
-                      stepFactor = 2.0;
-                  } else {
-                      // Mid-range - more aggressive transition
-                      stepFactor = 1.0 + (d - 0.01) * 1.8; // Linear from 1.0 to ~2.0
-                  }
-                  t += d * stepFactor;
-              } else {
-                  // Standard Ray Marching
-                  t += d;
-              }
-              
-              if (t > MAX_DIST) break;
-          }
-          return t;
+          return rayMarchStandard(ro, rd);
+      } else if (u_clipMode == 1) {
+          return rayMarchClipMode1(ro, rd);
+      } else if (u_clipMode == 2) {
+          return rayMarchClipMode2(ro, rd);
+      } else if (u_clipMode == 3) {
+          return rayMarchClipMode3(ro, rd);
+      } else {
+          // Fallback to standard implementation for any unknown clip modes
+          return rayMarchStandard(ro, rd);
       }
   }
 
