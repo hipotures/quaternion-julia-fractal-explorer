@@ -176,6 +176,67 @@ async function saveFractalState(baseFilename) {
     }
 }
 
+// Funkcja do zrzutu całego widocznego obszaru (z UI)
+async function takeFullPageScreenshot() {
+    try {
+        // Użyjemy html2canvas do zrzutu całej strony
+        // Najpierw przygotujmy canvas dla fraktala
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        // Utwórz nowy canvas do rysowania
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const ctx = tempCanvas.getContext('2d');
+        
+        // Narysuj WebGL canvas (fraktal)
+        ctx.drawImage(renderer.domElement, 0, 0);
+        
+        // Pobieramy wszystkie elementy UI
+        const elements = document.querySelectorAll('div, span, button, p');
+        
+        // Filtrujemy do tych, które są widoczne i dodajemy je do canvasa
+        for (const el of elements) {
+            if (el.offsetParent === null) continue; // Element jest ukryty
+            
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) continue;
+            
+            // Tworzymy "zrzut" elementu jako canvas
+            // W rzeczywistości rysujemy odpowiednie kolory tła i obramowania
+            ctx.save();
+            ctx.fillStyle = getComputedStyle(el).backgroundColor;
+            if (ctx.fillStyle !== 'rgba(0, 0, 0, 0)') {
+                ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            }
+            
+            // Jeśli element ma tekst, dodajemy go
+            if (el.innerText) {
+                const style = getComputedStyle(el);
+                ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+                ctx.fillStyle = style.color;
+                ctx.fillText(el.innerText, rect.left + 5, rect.top + parseInt(style.fontSize));
+            }
+            
+            // Rysujemy obramowanie, jeśli istnieje
+            const borderWidth = parseInt(getComputedStyle(el).borderWidth);
+            if (borderWidth > 0) {
+                ctx.strokeStyle = getComputedStyle(el).borderColor;
+                ctx.lineWidth = borderWidth;
+                ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
+            }
+            
+            ctx.restore();
+        }
+        
+        return tempCanvas;
+    } catch (error) {
+        console.error("Error in full page screenshot:", error);
+        throw error;
+    }
+}
+
 // Główna funkcja wykonująca zrzut ekranu
 export async function takeScreenshot(includeUI = false) {
     if (!renderer || !renderer.domElement) {
@@ -190,42 +251,59 @@ export async function takeScreenshot(includeUI = false) {
         // Włącz preserveDrawingBuffer aby umożliwić poprawne zrzuty ekranu WebGL
         renderer.preserveDrawingBuffer = true;
         
-        // Jeśli nie chcemy UI, ukryj je przed zrzutem
-        if (!includeUI) {
-            hideUIForScreenshot();
-            
-            // Daj czas na przerysowanie strony bez UI
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
         // Wymuś przerysowanie sceny przed zrzutem ekranu
         if (scene) {
             renderer.render(scene, camera);
         }
         
-        // Wymiary canvas
-        const canvas = renderer.domElement;
+        let screenshotData;
         
-        // Utwórz nowy Canvas 2D aby skopiować zawartość WebGL canvas
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        const ctx = tempCanvas.getContext('2d');
+        if (includeUI) {
+            try {
+                // Próba zrzutu całego ekranu z UI
+                screenshotData = await takeFullPageScreenshot();
+            } catch (error) {
+                console.error("Full page screenshot failed, falling back to canvas only:", error);
+                // Fallback do zwykłego zrzutu canvas
+                includeUI = false;
+            }
+        }
         
-        // Kopiuj zawartość canvas WebGL do canvas 2D
-        ctx.drawImage(canvas, 0, 0);
+        if (!includeUI) {
+            // Ukryj UI przed zrzutem
+            hideUIForScreenshot();
+            
+            // Daj czas na przerysowanie strony bez UI
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Wymuś ponowne przerysowanie sceny przed zrzutem ekranu
+            if (scene) {
+                renderer.render(scene, camera);
+            }
+            
+            // Wymiary canvas
+            const canvas = renderer.domElement;
+            
+            // Utwórz nowy Canvas 2D aby skopiować zawartość WebGL canvas
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const ctx = tempCanvas.getContext('2d');
+            
+            // Kopiuj zawartość canvas WebGL do canvas 2D
+            ctx.drawImage(canvas, 0, 0);
+            
+            screenshotData = tempCanvas;
+        }
         
         // Wykonaj zrzut ekranu (ewentualnie przeskalowany)
-        let screenshotData;
         if (CONFIG.SCREENSHOT.RESCALING.ENABLED) {
             const scaled = rescaleImage(
-                tempCanvas, 
+                screenshotData, 
                 CONFIG.SCREENSHOT.RESCALING.MAX_WIDTH, 
                 CONFIG.SCREENSHOT.RESCALING.MAX_HEIGHT
             );
             screenshotData = scaled.canvas;
-        } else {
-            screenshotData = tempCanvas;
         }
         
         // Znajdź format na podstawie konfiguracji
