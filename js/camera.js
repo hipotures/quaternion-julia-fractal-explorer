@@ -1,6 +1,7 @@
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { uniforms, updateCameraUniforms, getRotationMatrix } from './shaders.js';
 import { isWheelButtonPressed } from './interactions.js'; // Import for mouse wheel press detection
+import { CONFIG } from './config.js'; // Import configuration values
 
 // --- Camera Object ---
 export const camera = new THREE.Camera();
@@ -17,35 +18,35 @@ export const cameraState = {
     yaw: 0,   // Horizontal rotation angle (radians)
 
     // --- Orbital Control Parameters ---
-    radius: 2.0, // Distance from the center point (used for zoom +/-)
+    radius: CONFIG.CAMERA.INITIAL_RADIUS, // Distance from the center point (used for zoom +/-)
     theta: 0.0, // Horizontal angle in spherical coordinates (radians)
     phi: Math.PI * 0.5, // Vertical angle in spherical coordinates (radians)
 
     // --- Movement Parameters (Forward/Backward via Scroll) ---
-    moveSpeed: 0.005, // Base speed factor (currently unused, velocity is calculated directly)
+    moveSpeed: CONFIG.CAMERA.MOVE_SPEED, // Base speed factor (currently unused, velocity is calculated directly)
     moveVelocity: 0.0, // Current forward/backward velocity (positive = forward, negative = backward)
     isMovingForward: false, // Flag indicating if currently moving via scroll velocity
-    maxVelocity: 0.05, // Maximum allowed forward/backward velocity
+    maxVelocity: CONFIG.CAMERA.MAX_VELOCITY, // Maximum allowed forward/backward velocity
     acceleration: 0.01, // Acceleration factor when scrolling (currently unused)
-    deceleration: 0.005, // Deceleration factor applied each frame (higher = faster stop). Increased from 0.001
-    velocitySensitivity: 0.000003, // Multiplier for scroll wheel delta to adjust velocity
+    deceleration: CONFIG.CAMERA.DECELERATION, // Deceleration factor applied each frame (higher = faster stop)
+    velocitySensitivity: CONFIG.CAMERA.VELOCITY_SENSITIVITY, // Multiplier for scroll wheel delta to adjust velocity
 
     // --- Smooth Transition Parameters (Click-to-move) ---
     targetCenter: new THREE.Vector3(), // Target look-at point for smooth transition (Vector3)
     isMovingToTarget: false, // Flag indicating if a smooth transition is in progress
     targetProgress: 0, // Progress of the smooth transition animation (0 to 1)
-    targetDuration: 1.0, // Duration of the smooth transition animation (seconds)
+    targetDuration: CONFIG.CAMERA.TARGET_DURATION, // Duration of the smooth transition animation (seconds)
     animationEnabled: true, // Master toggle for smooth camera animations (A key)
 
     // --- Auto-Return Parameters ---
-    initialRadius: 2.0, // Initial camera distance from origin for reset
+    initialRadius: CONFIG.CAMERA.INITIAL_RADIUS, // Initial camera distance from origin for reset
     initialCenter: new THREE.Vector3(0, 0, 0), // Initial look-at point for reset (Vector3)
-    maxDistance: 2.4, // Maksymalna dozwolona odległość od centrum - zmniejszone z 3.0 na 2.4
+    maxDistance: CONFIG.CAMERA.MAX_DISTANCE, // Maksymalna dozwolona odległość od centrum
     isReturningToStart: false, // Flag indicating if the camera is currently animating back to the start position
 
     // --- Lens Parameters ---
-    focalLength: 1.5, // Camera focal length, affects field of view (Z/X keys)
-    defaultFocalLength: 1.5, // Default focal length used for reset (R key)
+    focalLength: CONFIG.CAMERA.DEFAULT_FOCAL_LENGTH, // Camera focal length, affects field of view (Z/X keys)
+    defaultFocalLength: CONFIG.CAMERA.DEFAULT_FOCAL_LENGTH, // Default focal length used for reset (R key)
 
     // --- Movement Modifiers ---
     decelerationEnabled: true, // Toggle for applying deceleration to scroll movement (D key)
@@ -265,7 +266,7 @@ export function updateCameraMovement(delta) {
                 // Oblicz wektor w kierunku centrum
                 const pullbackDirection = new THREE.Vector3().copy(cameraState.position).negate().normalize();
                 // Delikatnie przyciągnij kamerę z powrotem (bardzo powoli)
-                const pullbackFactor = 0.001;
+                const pullbackFactor = CONFIG.CAMERA.PULLBACK_FACTOR;
                 cameraState.position.addScaledVector(pullbackDirection, 
                     pullbackFactor * (distanceFromOrigin - cameraState.maxDistance));
                 
@@ -292,7 +293,7 @@ export function updateCameraMovement(delta) {
         }
         
         // Stop if velocity is very small (regardless of deceleration)
-        if (Math.abs(cameraState.moveVelocity) < 0.0001) {
+        if (Math.abs(cameraState.moveVelocity) < CONFIG.CAMERA.MIN_VELOCITY_THRESHOLD) {
             cameraState.moveVelocity = 0;
             cameraState.isMovingForward = false;
         }

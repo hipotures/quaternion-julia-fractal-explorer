@@ -1,6 +1,7 @@
 import { renderer } from './scene.js';
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { uniforms, getRotationMatrix, updateFractalParamsUniform } from './shaders.js'; // Import uniforms for raycasting estimate
+import { CONFIG } from './config.js'; // Import configuration values
 import {
     camera, cameraState, updateOrbitCamera, updateCameraRotation,
     startTargetAnimation, syncPitchYawFromCamera, setupInitialCamera, updateCameraState
@@ -30,11 +31,11 @@ function estimateSimpleDistance(pos) {
     const c = uniforms.u_c.value; // Use current fractal params from uniforms
 
     let r = 0.0;
-    const maxIter = 20; // Fewer iterations for speed
+    const maxIter = CONFIG.RAYMARCHING.SIMPLE_DISTANCE_MAX_ITER; // Fewer iterations for speed
 
     for (let i = 0; i < maxIter; i++) {
         r = z.length();
-        if (r > 4.0) break;
+        if (r > CONFIG.RAYMARCHING.ESCAPE_RADIUS) break;
 
         // Simplified quaternion multiplication (qmul(z, z))
         const zx = z.x, zy = z.y, zz = z.z, zw = z.w;
@@ -56,7 +57,8 @@ function estimateSimpleDistance(pos) {
     }
 
     // Return a small distance if likely inside the set, or a fraction of radius otherwise
-    return r < 4.0 ? 0.02 : Math.abs(0.5 * Math.log(Math.max(r, 1e-6)) * r / 1.0); // Simplified DE approximation
+    return r < CONFIG.RAYMARCHING.ESCAPE_RADIUS ? CONFIG.RAYMARCHING.DEFAULT_STEP_SIZE : 
+           Math.abs(CONFIG.RAYMARCHING.SHADOW_FACTOR * Math.log(Math.max(r, CONFIG.RAYMARCHING.MIN_STEP_SIZE)) * r / 1.0); // Simplified DE approximation
 }
 
 
@@ -64,7 +66,7 @@ function estimateSimpleDistance(pos) {
 
 function handleKeyDown(e) {
     // Check for escape key to stop tour playback (this takes precedence over all other keys)
-    if (e.key === 'Escape') {
+    if (e.key === CONFIG.KEYS.ESCAPE) {
         if (isTourPlaying()) {
             stopTourPlayback();
             return;
@@ -75,49 +77,49 @@ function handleKeyDown(e) {
     if (isTourPlaying()) return;
     
     // Ignore inputs if paused, except for the pause key itself
-    if (isPaused() && e.key !== ' ') return;
+    if (isPaused() && e.key !== CONFIG.KEYS.SPACE) return;
 
-    if (e.key === 'Control') {
+    if (e.key === CONFIG.KEYS.CONTROL) {
         isCtrlPressed = true;
         return; // Don't process Control key further
     }
 
     switch (e.key.toLowerCase()) { // Use toLowerCase for case-insensitivity
         // --- UI ---
-        case 'p':
+        case CONFIG.KEYS.TOGGLE_STATS:
             toggleStats();
             break;
-        case 'm':
+        case CONFIG.KEYS.TOGGLE_MENU:
             toggleMenu();
             break;
 
         // --- Camera Rotation ---
-        case 'arrowleft':
+        case CONFIG.KEYS.ARROW_LEFT:
             cameraState.yaw += isCtrlPressed ? 0.25 : 0.05;
             updateCameraRotation();
             break;
-        case 'arrowright':
+        case CONFIG.KEYS.ARROW_RIGHT:
             cameraState.yaw -= isCtrlPressed ? 0.25 : 0.05;
             updateCameraRotation();
             break;
-        case 'arrowup':
+        case CONFIG.KEYS.ARROW_UP:
             cameraState.pitch += isCtrlPressed ? 0.25 : 0.05;
             // Clamping is handled within updateCameraRotation
             updateCameraRotation();
             break;
-        case 'arrowdown':
+        case CONFIG.KEYS.ARROW_DOWN:
             cameraState.pitch -= isCtrlPressed ? 0.25 : 0.05;
             // Clamping is handled within updateCameraRotation
             updateCameraRotation();
             break;
 
         // --- Camera Zoom (Focal Length) ---
-        case '+':
-        case '=': // Handle '=' key often paired with '+'
+        case CONFIG.KEYS.PLUS:
+        case CONFIG.KEYS.EQUALS: // Handle '=' key often paired with '+'
             cameraState.focalLength = Math.min(24.0, cameraState.focalLength + 0.1);
             updateCameraState(); // Update uniforms
             break;
-        case '-':
+        case CONFIG.KEYS.MINUS:
             cameraState.focalLength = Math.max(0.1, cameraState.focalLength - 0.1);
             updateCameraState(); // Update uniforms
             break;
@@ -130,7 +132,7 @@ function handleKeyDown(e) {
             break;
 
         // --- Reset ---
-        case 'r':
+        case CONFIG.KEYS.RESET:
             resetFractalParams();
             cameraState.focalLength = cameraState.defaultFocalLength;
             // Trigger return to start animation instead of immediate reset
@@ -141,11 +143,11 @@ function handleKeyDown(e) {
             break;
 
         // --- Animation Toggles ---
-        case 'a':
+        case CONFIG.KEYS.TOGGLE_ANIMATION:
             cameraState.animationEnabled = !cameraState.animationEnabled;
             console.log("Animations:", cameraState.animationEnabled ? "ON" : "OFF");
             break;
-        case '0':
+        case CONFIG.KEYS.TOGGLE_SLICE_ANIMATION:
             // When toggling, make sure to store the current phase/value
             // so animation can continue from exactly the same point
             toggleSliceAnimation();
@@ -154,35 +156,35 @@ function handleKeyDown(e) {
             break;
 
         // --- Quality/Rendering ---
-        case '1':
+        case CONFIG.KEYS.INCREASE_ITERATIONS:
             changeIterations(20);
             break;
-        case '2':
+        case CONFIG.KEYS.DECREASE_ITERATIONS:
             changeIterations(-20);
             break;
-        case '3':
+        case CONFIG.KEYS.TOGGLE_SHADOWS:
             toggleShadows();
             break;
-        case '4':
+        case CONFIG.KEYS.TOGGLE_AO:
             toggleAO();
             break;
-        case '5':
+        case CONFIG.KEYS.TOGGLE_SMOOTH_COLOR:
             toggleSmoothColor();
             break;
-        case '6':
+        case CONFIG.KEYS.CHANGE_PALETTE:
             changePalette();
             break;
-        case '7':
+        case CONFIG.KEYS.TOGGLE_SPECULAR:
             toggleSpecular();
             break;
-        case '8':
+        case CONFIG.KEYS.TOGGLE_ADAPTIVE_STEPS:
             toggleAdaptiveSteps();
             break;
-        case '9':
+        case CONFIG.KEYS.CYCLE_CLIP_MODE:
             // Cyklicznie przełączamy tryby: OFF -> METHOD 1 -> METHOD 2 -> OFF
             cycleClipMode();
             break;
-        case '[':
+        case CONFIG.KEYS.DECREASE_CLIP_DISTANCE:
             // Only change clip distance if cross section is enabled
             if (crossSectionSettings.clipMode > 0) {
                 decreaseClipDistance();
@@ -190,7 +192,7 @@ function handleKeyDown(e) {
                 console.log("Cross-Section is OFF - enable it with '9' key first");
             }
             break;
-        case ']':
+        case CONFIG.KEYS.INCREASE_CLIP_DISTANCE:
             // Only change clip distance if cross section is enabled
             if (crossSectionSettings.clipMode > 0) {
                 increaseClipDistance();
@@ -201,16 +203,16 @@ function handleKeyDown(e) {
             
         // --- Slice Amplitude Control ---
         case '<':
-        case ',': // For keyboards that require shift for < character
+        case CONFIG.KEYS.DECREASE_SLICE_AMPLITUDE: // For keyboards that require shift for < character
             changeSliceAmplitude(-0.1);
             break;
         case '>':
-        case '.': // For keyboards that require shift for > character
+        case CONFIG.KEYS.INCREASE_SLICE_AMPLITUDE: // For keyboards that require shift for > character
             changeSliceAmplitude(0.1);
             break;
 
         // --- Pause / Stop Movement ---
-        case ' ':
+        case CONFIG.KEYS.SPACE:
             // Stop any forward/backward movement immediately
             cameraState.moveVelocity = 0;
             cameraState.isMovingForward = false;
@@ -219,28 +221,28 @@ function handleKeyDown(e) {
             break;
 
         // --- Deceleration Toggle ---
-        case 'd':
+        case CONFIG.KEYS.TOGGLE_DECELERATION:
             cameraState.decelerationEnabled = !cameraState.decelerationEnabled;
             console.log("Deceleration:", cameraState.decelerationEnabled ? "ON" : "OFF");
             break;
             
         // --- Recording Controls ---
-        case 'v':
+        case CONFIG.KEYS.TOGGLE_RECORDING:
             toggleRecording();
             break;
-        case 'q':
+        case CONFIG.KEYS.CYCLE_QUALITY:
             cycleQuality();
             break;
             
         // --- Tour Mode ---
-        case 't':
+        case CONFIG.KEYS.TOGGLE_TOUR:
             toggleTourMenu();
             break;
     }
 }
 
 function handleKeyUp(e) {
-    if (e.key === 'Control') {
+    if (e.key === CONFIG.KEYS.CONTROL) {
         isCtrlPressed = false;
     }
 }
@@ -265,7 +267,7 @@ function handleMouseClick(event) {
         .normalize();
 
     // If already moving via scroll, just change the look direction smoothly
-    if (Math.abs(cameraState.moveVelocity) > 0.0001) {
+    if (Math.abs(cameraState.moveVelocity) > CONFIG.CAMERA.MIN_VELOCITY_THRESHOLD) {
         const lookDir = dir.clone();
         // Calculate a new target center point in the direction of the click
         const newCenter = new THREE.Vector3().copy(cameraState.position).addScaledVector(lookDir, cameraState.radius);
@@ -277,18 +279,18 @@ function handleMouseClick(event) {
         const rd = dir.clone();
         let hitPoint = null;
         let dist = 0.0;
-        const steps = 32; // Ray march steps
+        const steps = CONFIG.RAYMARCHING.STEP_COUNT; // Ray march steps
 
         for (let i = 0; i < steps; i++) {
             const pos = ro.clone().addScaledVector(rd, dist);
             const d = estimateSimpleDistance(pos); // Use the helper
 
-            if (d < 0.01) { // Threshold for hit
+            if (d < CONFIG.RAYMARCHING.HIT_THRESHOLD) { // Threshold for hit
                 hitPoint = pos;
                 break;
             }
-            dist += Math.max(0.01, d * 0.8); // Step forward (slightly less than DE for safety)
-            if (dist > 20.0) break; // Max distance
+            dist += Math.max(CONFIG.RAYMARCHING.HIT_THRESHOLD, d * CONFIG.RAYMARCHING.STEP_MULTIPLIER); // Step forward (slightly less than DE for safety)
+            if (dist > CONFIG.RAYMARCHING.MAX_DISTANCE) break; // Max distance
         }
 
         // If no hit, target a point along the ray at a reasonable distance
@@ -312,7 +314,7 @@ function handleMouseWheel(e) {
         cameraState.moveVelocity = Math.max(-cameraState.maxVelocity, Math.min(cameraState.maxVelocity, cameraState.moveVelocity));
 
         // Determine movement state
-        cameraState.isMovingForward = Math.abs(cameraState.moveVelocity) > 0.0001;
+        cameraState.isMovingForward = Math.abs(cameraState.moveVelocity) > CONFIG.CAMERA.MIN_VELOCITY_THRESHOLD;
 
         // Prevent instant direction change if already moving slowly in opposite direction
         // (This logic was slightly different in original, re-evaluating)

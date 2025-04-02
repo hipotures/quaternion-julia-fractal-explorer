@@ -3,14 +3,15 @@ import { fractalState, qualitySettings, colorSettings, crossSectionSettings, res
 import { getRecordingQuality } from './recorder.js';
 import { getFps } from './main.js'; // Import FPS function
 import { updateFractalParamsUniform } from './shaders.js';
+import { CONFIG } from './config.js'; // Import configuration values
 import { 
     startTourRecording, registerTourPoint, finishTourRecording, 
     cancelTourRecording, getTourPointCount, isTourRecording 
 } from './tour.js';
 
 // --- DOM Elements ---
-const statsElement = document.getElementById('stats');
-const menuElement = document.getElementById('menu');
+const statsElement = document.getElementById(CONFIG.UI.SELECTORS.STATS_PANEL);
+const menuElement = document.getElementById(CONFIG.UI.SELECTORS.MENU_PANEL);
 
 // --- State ---
 let showStats = true;
@@ -123,7 +124,7 @@ export function setPauseVisuals(paused) {
 }
 
 // --- Quaternion Presets ---
-const presetMenu = document.getElementById('preset-menu');
+const presetMenu = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
 const quaternionPresets = [
     new THREE.Vector4(-1.0, 0.2, 0.0, 0.0),      // Q01
     new THREE.Vector4(-0.291, -0.399, 0.339, 0.437), // Q02
@@ -178,7 +179,9 @@ function initPresetButtons() {
 function updatePresetMenuVisibility() {
     if (presetMenu) {
         // Show preset menu only if either stats or menu are visible
-        presetMenu.style.display = (showStats || showMenu) ? 'flex' : 'none';
+        const shouldBeVisible = (showStats || showMenu);
+        presetMenu.style.display = shouldBeVisible ? 'flex' : 'none';
+        presetMenu.style.visibility = shouldBeVisible ? 'visible' : 'hidden';
     }
 }
 
@@ -196,13 +199,13 @@ toggleStats = function(forcedState = null) {
 };
 
 // --- UI Elements ---
-const tourMenu = document.getElementById('tour-menu');
-const tourPointCountElement = document.getElementById('tour-point-count');
-const registerPointButton = document.getElementById('register-point');
-const finishTourButton = document.getElementById('finish-tour');
-const cancelTourButton = document.getElementById('cancel-tour');
-const tourPresetsElement = document.getElementById('tour-presets');
-const tourStatusElement = document.getElementById('tour-status');
+const tourMenu = document.getElementById(CONFIG.UI.SELECTORS.TOUR_MENU);
+const tourPointCountElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_POINT_COUNT);
+const registerPointButton = document.getElementById(CONFIG.UI.SELECTORS.REGISTER_POINT);
+const finishTourButton = document.getElementById(CONFIG.UI.SELECTORS.FINISH_TOUR);
+const cancelTourButton = document.getElementById(CONFIG.UI.SELECTORS.CANCEL_TOUR);
+const tourPresetsElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_PRESETS);
+const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
 
 // Function to toggle the Tour Menu
 export function toggleTourMenu() {
@@ -245,6 +248,8 @@ export function isPresetMenuVisible() {
 export function showPresetMenu(visible) {
     if (presetMenu) {
         presetMenu.style.display = visible ? 'flex' : 'none';
+        presetMenu.style.visibility = visible ? 'visible' : 'hidden';
+        console.log("PresetMenu visibility changed:", visible ? "visible" : "hidden");
     }
 }
 
@@ -275,7 +280,7 @@ function handleFinishTour() {
 
 // Cancel the current tour recording
 function handleCancelTour() {
-    if (confirm("Cancel the current tour recording? All points will be lost.")) {
+    if (confirm(CONFIG.UI.TEXT.TOUR_CANCEL_CONFIRM)) {
         cancelTourRecording();
         tourMenu.style.display = 'none';
     }

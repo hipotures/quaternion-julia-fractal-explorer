@@ -2,6 +2,7 @@ import { renderer } from './scene.js';
 import { toggleStats, setPauseVisuals } from './ui.js';
 import { camera, cameraState } from './camera.js';
 import { forceStatsUpdateFor } from './main.js'; // Import for forcing stats updates
+import { CONFIG } from './config.js'; // Import configuration values
 
 // --- Recording State ---
 let mediaRecorder = null;
@@ -17,8 +18,8 @@ let currentQuality = 'NORMAL'; // 'NORMAL', 'HIGH', 'ULTRA'
 export function initRecorder() {
     // Create recording indicator element (will appear top right when recording)
     recordingIndicator = document.createElement('div');
-    recordingIndicator.id = 'recording-indicator';
-    recordingIndicator.innerHTML = 'REC ⚫';
+    recordingIndicator.id = CONFIG.UI.SELECTORS.RECORDING_INDICATOR;
+    recordingIndicator.innerHTML = CONFIG.RECORDER.UI_TEXT.RECORDING_INDICATOR;
     recordingIndicator.style.position = 'absolute';
     recordingIndicator.style.top = '10px';
     recordingIndicator.style.right = '10px';
@@ -44,18 +45,18 @@ export function startRecording() {
         // Save original camera state and canvas properties
         saveOriginalState();
         
-        // Try to get the canvas stream at 60 FPS
-        const stream = renderer.domElement.captureStream(60); // 60 FPS
+        // Try to get the canvas stream at specified FPS
+        const stream = renderer.domElement.captureStream(CONFIG.RECORDER.FPS);
         
         // Try to use best quality codec with high bitrate
         let options;
-        let bitrate = 5000000; // 5 Mbps default
+        let bitrate = CONFIG.RECORDER.BITRATES.NORMAL; // Default bitrate
         
         // Adjust bitrate based on quality setting (NO RESOLUTION CHANGES)
         if (currentQuality === 'ULTRA') {
-            bitrate = 16000000; // 16 Mbps
+            bitrate = CONFIG.RECORDER.BITRATES.ULTRA;
         } else if (currentQuality === 'HIGH') {
-            bitrate = 10000000; // 10 Mbps
+            bitrate = CONFIG.RECORDER.BITRATES.HIGH;
         }
         
         try {
@@ -93,9 +94,9 @@ export function startRecording() {
         // Clear previous recording data
         recordedChunks = [];
         
-        // Start recording with a timeSlice of 1000ms to create multiple chunks
+        // Start recording with a timeSlice to create multiple chunks
         // This helps with quality by creating more frequent keyframes
-        mediaRecorder.start(1000);
+        mediaRecorder.start(CONFIG.RECORDER.TIMESLICE_MS);
         isRecording = true;
         recordingStartTime = Date.now();
         
@@ -159,8 +160,8 @@ export function stopRecording() {
             statsElement.style.display = statsElement.dataset.preRecordingState;
             delete statsElement.dataset.preRecordingState;
             
-            // Force stats updates for 5 seconds even if panel is hidden
-            forceStatsUpdateFor(5);
+            // Force stats updates even if panel is hidden
+            forceStatsUpdateFor(CONFIG.RECORDER.FORCE_STATS_UPDATE_DURATION);
             
             // Make an immediate update call
             if (window.updateStatsPanel) {
@@ -302,13 +303,13 @@ export function cycleQuality() {
     
     if (currentQuality === 'NORMAL') {
         currentQuality = 'HIGH';
-        console.log('Recording quality set to HIGH (10 Mbps bitrate)');
+        console.log(`Recording quality set to HIGH (${CONFIG.RECORDER.BITRATES.HIGH/1000000} Mbps bitrate)`);
     } else if (currentQuality === 'HIGH') {
         currentQuality = 'ULTRA';
-        console.log('Recording quality set to ULTRA (16 Mbps bitrate)');
+        console.log(`Recording quality set to ULTRA (${CONFIG.RECORDER.BITRATES.ULTRA/1000000} Mbps bitrate)`);
     } else {
         currentQuality = 'NORMAL';
-        console.log('Recording quality set to NORMAL (5 Mbps bitrate)');
+        console.log(`Recording quality set to NORMAL (${CONFIG.RECORDER.BITRATES.NORMAL/1000000} Mbps bitrate)`);
     }
     
     // Force a refresh of the UI to show the new quality

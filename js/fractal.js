@@ -1,5 +1,6 @@
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { uniforms, updateFractalParamsUniform, updateSliceUniform, updateQualityUniforms, updateColorUniforms } from './shaders.js';
+import { CONFIG } from './config.js'; // Import configuration values
 
 // --- Fractal State ---
 export const fractalState = {
@@ -7,13 +8,13 @@ export const fractalState = {
     animateSlice: true, // Toggle for animating the 4th dimension slice (0 key)
     sliceValue: 0.0, // Current value of the 4th dimension slice 
     slicePhase: 0.0, // Current phase in the sine wave animation (0-2π)
-    sliceAnimSpeed: 0.15, // How fast to advance the phase per frame (increased 3x from 0.05)
-    sliceAmplitude: 0.5, // Controls the range of slice values (-amplitude to +amplitude)
+    sliceAnimSpeed: CONFIG.FRACTAL.SLICE_ANIM_SPEED, // How fast to advance the phase per frame
+    sliceAmplitude: CONFIG.FRACTAL.SLICE_AMPLITUDE, // Controls the range of slice values (-amplitude to +amplitude)
 };
 
 // --- Quality Settings ---
 export const qualitySettings = {
-    maxIter: 100, // Maximum ray marching iterations (1/2 keys)
+    maxIter: CONFIG.FRACTAL.DEFAULT_MAX_ITER, // Maximum ray marching iterations (1/2 keys)
     enableShadows: false, // Toggle for soft shadows (3 key)
     enableAO: false, // Toggle for Ambient Occlusion (4 key)
     enableSmoothColor: false, // Toggle for smooth iteration count coloring (5 key)
@@ -24,8 +25,8 @@ export const qualitySettings = {
 // --- Cross Section Settings ---
 export const crossSectionSettings = {
     clipMode: 0, // 0: off, 1: method 1 (ignoruj pierwsze trafienie), 2: method 2 (zatrzymaj na płaszczyźnie), 3: method 3 (przekrój od tyłu)
-    clipDistance: 3.5, // Odległość płaszczyzny tnącej od kamery - zwiększona wartość
-    clipDistanceStep: 0.2 // Krok zmiany odległości
+    clipDistance: CONFIG.FRACTAL.CLIP_DISTANCE, // Odległość płaszczyzny tnącej od kamery
+    clipDistanceStep: CONFIG.FRACTAL.CLIP_DISTANCE_STEP // Krok zmiany odległości
 };
 
 // --- Color Settings ---
@@ -88,7 +89,7 @@ export function updateSlice(delta) {
 
 // Changes the maximum number of iterations
 export function changeIterations(delta) {
-    qualitySettings.maxIter = Math.max(20, Math.min(qualitySettings.maxIter + delta, 2000)); // Clamp between 20 and 2000
+    qualitySettings.maxIter = Math.max(CONFIG.FRACTAL.MIN_ITER, Math.min(qualitySettings.maxIter + delta, CONFIG.FRACTAL.MAX_ITER)); // Clamp between MIN_ITER and MAX_ITER
     updateQualityUniforms(qualitySettings);
     console.log("Max Iterations:", qualitySettings.maxIter);
 }
@@ -187,7 +188,7 @@ export function decreaseClipDistance() {
 
 // Cycles through color palettes
 export function changePalette() {
-    colorSettings.paletteIndex = (colorSettings.paletteIndex + 1) % 11; // 11 states: 0 (off) + 10 palettes
+    colorSettings.paletteIndex = (colorSettings.paletteIndex + 1) % CONFIG.FRACTAL.MAX_PALETTE_COUNT; // states: 0 (off) + palettes
     colorSettings.colorEnabled = (colorSettings.paletteIndex !== 0);
     // Pass the correct index to the shader (0-9 for palettes, or irrelevant if disabled)
     const shaderPaletteIndex = colorSettings.colorEnabled ? colorSettings.paletteIndex - 1 : 0;

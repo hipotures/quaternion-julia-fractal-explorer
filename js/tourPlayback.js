@@ -1,6 +1,7 @@
 import { tourState } from './tour.js';
 import { cameraState } from './camera.js';
 import { fractalState, qualitySettings, colorSettings, crossSectionSettings } from './fractal.js';
+import { CONFIG } from './config.js'; // Import configuration values
 
 // --- Tour Playback Functions ---
 
@@ -56,32 +57,33 @@ export function startTourPlayback(tourData) {
     });
     
     // Show tour status bar and hide preset menu directly through DOM manipulation
-    const tourStatusElement = document.getElementById('tour-status');
-    const presetMenuElement = document.getElementById('preset-menu');
+    const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
     
     if (tourStatusElement) {
         tourStatusElement.style.display = 'block';
         tourStatusElement.textContent = `${tourData.name || 'Tour'} - Point 1/${tourData.points.length}`;
     }
     
-    // Force hide preset menu immediately through direct DOM manipulation
-    // This ensures it's hidden without waiting for the UI module to load
+    // Force hide preset menu immediately - CRITICAL FIX
+    const presetMenuElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
     if (presetMenuElement) {
+        // Stosujemy zarówno display jak i visibility aby zapewnić całkowite ukrycie
         presetMenuElement.style.display = 'none';
-        presetMenuElement.style.visibility = 'hidden'; // Additional hiding property
+        presetMenuElement.style.visibility = 'hidden';
         console.log("Force hiding preset menu via direct DOM manipulation");
     } else {
         console.warn("Preset menu element not found for direct hiding!");
-        // Try again after a short delay to ensure the DOM is ready
-        setTimeout(() => {
-            const retryElement = document.getElementById('preset-menu');
-            if (retryElement) {
-                retryElement.style.display = 'none';
-                retryElement.style.visibility = 'hidden';
-                console.log("Force hiding preset menu after delay");
-            }
-        }, 50);
     }
+    
+    // Dodatkowa próba ukrycia z opóźnieniem dla zapewnienia, że menu zostanie ukryte
+    setTimeout(() => {
+        const retryElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
+        if (retryElement) {
+            retryElement.style.display = 'none';
+            retryElement.style.visibility = 'hidden';
+            console.log("Force hiding preset menu after delay");
+        }
+    }, 100); // Zwiększamy opóźnienie do 100ms
     
     // Initialize playback state
     tourState.isPlaying = true;
@@ -124,9 +126,17 @@ export function stopTourPlayback() {
     tourState.playbackTime = 0;
     
     // Hide tour status bar
-    const tourStatusElement = document.getElementById('tour-status');
+    const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
     if (tourStatusElement) {
         tourStatusElement.style.display = 'none';
+    }
+    
+    // Bezpośrednie przywrócenie widoczności menu presetów
+    const presetMenuElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
+    if (presetMenuElement && tourState.uiStateBeforePlayback.presetMenuVisible) {
+        presetMenuElement.style.display = 'flex';
+        presetMenuElement.style.visibility = 'visible';
+        console.log("Force restoring preset menu visibility via direct DOM manipulation");
     }
     
     // Restore UI state
@@ -160,9 +170,9 @@ export function updateTourPlayback(deltaTime) {
         tourState.tourEndingTime += deltaTime;
         
         // Update the status message
-        const tourStatusElement = document.getElementById('tour-status');
+        const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
         if (tourStatusElement) {
-            tourStatusElement.textContent = `Tour Completed: ${tour.name || 'Tour'}`;
+                tourStatusElement.textContent = `${CONFIG.UI.TEXT.TOUR_COMPLETED}: ${tour.name || 'Tour'}`;
         }
         
         // After the ending message duration, stop the tour playback
@@ -182,7 +192,7 @@ export function updateTourPlayback(deltaTime) {
     
     if (tourState.inTransition) {
         // During transition between points
-        const transitionDuration = tour.defaultTransitionDuration || tourState.defaultTransitionDuration;
+        const transitionDuration = tour.defaultTransitionDuration || tourState.defaultTransitionDuration || CONFIG.TOURS.DEFAULT_TRANSITION_DURATION;
         tourState.transitionProgress += deltaTime / transitionDuration;
         
         if (tourState.transitionProgress >= 1.0) {
@@ -192,9 +202,10 @@ export function updateTourPlayback(deltaTime) {
             tourState.currentPointIndex = tourState.nextPointIndex;
             
             // Update status bar
-            const tourStatusElement = document.getElementById('tour-status');
+            const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
             if (tourStatusElement) {
-                tourStatusElement.textContent = `${tour.name || 'Tour'} - Point ${tourState.currentPointIndex + 1}/${tour.points.length}`;
+                const statusText = CONFIG.UI.TEXT.TOUR_POINT_STATUS.replace('{NUM}', `${tourState.currentPointIndex + 1}/${tour.points.length}`);
+                tourStatusElement.textContent = `${tour.name || 'Tour'} - ${statusText}`;
             }
             
             // Reset playback time for staying at this point
@@ -206,7 +217,7 @@ export function updateTourPlayback(deltaTime) {
         }
     } else {
         // Staying at the current point
-        const stayDuration = tour.defaultStayDuration || tourState.defaultStayDuration;
+        const stayDuration = tour.defaultStayDuration || tourState.defaultStayDuration || CONFIG.TOURS.DEFAULT_STAY_DURATION;
         
         if (tourState.playbackTime >= stayDuration) {
             // Check if we're at the last point

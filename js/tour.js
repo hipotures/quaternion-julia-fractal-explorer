@@ -1,5 +1,6 @@
 import { cameraState } from './camera.js';
 import { fractalState, qualitySettings, colorSettings, crossSectionSettings } from './fractal.js';
+import { CONFIG } from './config.js'; // Import configuration values
 
 // --- Tour State ---
 export const tourState = {
@@ -20,9 +21,9 @@ export const tourState = {
     tourEndingTime: 0,       // Timer for the tour ending message display
     
     // Timing parameters
-    defaultTransitionDuration: 5.0,  // Default time to transition between points (in seconds)
-    defaultStayDuration: 3.0,        // Default time to stay at each point (in seconds)
-    tourEndingDuration: 3.0,         // Duration to show "Tour Completed" message (in seconds)
+    defaultTransitionDuration: CONFIG.TOURS.DEFAULT_TRANSITION_DURATION, // Default time to transition between points (in seconds)
+    defaultStayDuration: CONFIG.TOURS.DEFAULT_STAY_DURATION,             // Default time to stay at each point (in seconds)
+    tourEndingDuration: CONFIG.TOURS.TOUR_ENDING_DURATION,               // Duration to show "Tour Completed" message (in seconds)
     
     // Available tours
     availableTours: [],      // List of available tour files
@@ -50,9 +51,9 @@ export async function loadAvailableTours() {
         // Dynamically try loading tour files with incrementing numbers
         // until we encounter the first missing file
         while (hasMore) {
-            const fileName = `tour${index.toString().padStart(2, '0')}.json`;
+            const fileName = CONFIG.TOURS.FILE_PATTERN.replace('{NUM}', index.toString().padStart(2, '0'));
             try {
-                const response = await fetch(`tours/${fileName}`);
+                const response = await fetch(`${CONFIG.TOURS.PATH}${fileName}`);
                 if (response.ok) {
                     // Successfully loaded this tour file
                     const tourData = await response.json();
