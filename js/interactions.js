@@ -13,9 +13,10 @@ import {
     increaseClipDistance, decreaseClipDistance
 } from './fractal.js';
 // Placeholder imports - these functions will be defined in their respective modules later
-import { toggleStats, toggleMenu } from './ui.js';
+import { toggleStats, toggleMenu, toggleTourMenu } from './ui.js';
 import { togglePause, isPaused } from './main.js'; // Need isPaused to prevent input during pause
 import { toggleRecording, isCurrentlyRecording, cycleQuality } from './recorder.js'; // Import recording functions
+import { isTourPlaying, stopTourPlayback } from './tour.js'; // Import tour functions
 
 // --- Interaction State ---
 let isCtrlPressed = false;
@@ -62,6 +63,17 @@ function estimateSimpleDistance(pos) {
 // --- Event Handlers ---
 
 function handleKeyDown(e) {
+    // Check for escape key to stop tour playback (this takes precedence over all other keys)
+    if (e.key === 'Escape') {
+        if (isTourPlaying()) {
+            stopTourPlayback();
+            return;
+        }
+    }
+    
+    // Ignore inputs if tour is playing (only Escape works during tour)
+    if (isTourPlaying()) return;
+    
     // Ignore inputs if paused, except for the pause key itself
     if (isPaused() && e.key !== ' ') return;
 
@@ -218,6 +230,11 @@ function handleKeyDown(e) {
             break;
         case 'q':
             cycleQuality();
+            break;
+            
+        // --- Tour Mode ---
+        case 't':
+            toggleTourMenu();
             break;
     }
 }

@@ -3,6 +3,10 @@ import { fractalState, qualitySettings, colorSettings, crossSectionSettings, res
 import { getRecordingQuality } from './recorder.js';
 import { getFps } from './main.js'; // Import FPS function
 import { updateFractalParamsUniform } from './shaders.js';
+import { 
+    startTourRecording, registerTourPoint, finishTourRecording, 
+    cancelTourRecording, getTourPointCount, isTourRecording 
+} from './tour.js';
 
 // --- DOM Elements ---
 const statsElement = document.getElementById('stats');
@@ -191,6 +195,105 @@ toggleStats = function(forcedState = null) {
     updatePresetMenuVisibility();
 };
 
+// --- UI Elements ---
+const tourMenu = document.getElementById('tour-menu');
+const tourPointCountElement = document.getElementById('tour-point-count');
+const registerPointButton = document.getElementById('register-point');
+const finishTourButton = document.getElementById('finish-tour');
+const cancelTourButton = document.getElementById('cancel-tour');
+const tourPresetsElement = document.getElementById('tour-presets');
+const tourStatusElement = document.getElementById('tour-status');
+
+// Function to toggle the Tour Menu
+export function toggleTourMenu() {
+    if (!tourMenu) return false;
+
+    // If not already recording, start a new recording
+    if (!isTourRecording()) {
+        startTourRecording();
+        updateTourPointCount();
+        tourMenu.style.display = 'flex';
+        console.log("Tour recording started");
+        return true;
+    } else {
+        // If already recording, just toggle the visibility
+        const isVisible = tourMenu.style.display === 'flex';
+        tourMenu.style.display = isVisible ? 'none' : 'flex';
+        console.log("Tour menu visibility:", !isVisible);
+        return !isVisible;
+    }
+}
+
+// ----- UI State Query Functions -----
+
+// Check if the menu is visible
+export function isMenuVisible() {
+    return showMenu;
+}
+
+// Check if the stats panel is visible
+export function isStatsVisible() {
+    return showStats;
+}
+
+// Check if the preset menu is visible
+export function isPresetMenuVisible() {
+    return presetMenu && presetMenu.style.display === 'flex';
+}
+
+// Show or hide the preset menu
+export function showPresetMenu(visible) {
+    if (presetMenu) {
+        presetMenu.style.display = visible ? 'flex' : 'none';
+    }
+}
+
+// Update the tour point count display
+function updateTourPointCount() {
+    if (tourPointCountElement) {
+        tourPointCountElement.textContent = getTourPointCount().toString();
+    }
+}
+
+// Register a new tour point
+function handleRegisterPoint() {
+    const pointCount = registerTourPoint();
+    updateTourPointCount();
+    console.log(`Registered tour point #${pointCount}`);
+}
+
+// Finish and save the tour
+function handleFinishTour() {
+    const filename = finishTourRecording();
+    if (filename) {
+        alert(`Tour saved as ${filename}`);
+        tourMenu.style.display = 'none';
+    } else {
+        alert("No points to save. Register at least one point first.");
+    }
+}
+
+// Cancel the current tour recording
+function handleCancelTour() {
+    if (confirm("Cancel the current tour recording? All points will be lost.")) {
+        cancelTourRecording();
+        tourMenu.style.display = 'none';
+    }
+}
+
+// Add event listeners to tour menu buttons
+function initTourButtons() {
+    if (registerPointButton) {
+        registerPointButton.addEventListener('click', handleRegisterPoint);
+    }
+    if (finishTourButton) {
+        finishTourButton.addEventListener('click', handleFinishTour);
+    }
+    if (cancelTourButton) {
+        cancelTourButton.addEventListener('click', handleCancelTour);
+    }
+}
+
 // Initial setup - ensure menu is visible by default if element exists
 if (menuElement) {
     menuElement.style.display = 'block';
@@ -199,6 +302,109 @@ if (menuElement) {
 if (statsElement) {
     statsElement.style.display = 'block';
 }
+// Add tour preset buttons based on available tour files
+async function initTourPresetButtons() {
+    if (!tourPresetsElement) return;
+    
+    // Import loadAvailableTours function dynamically to avoid circular import issues
+    const { loadAvailableTours } = await import('./tour.js');
+    
+    // Load all available tours
+    const tours = await loadAvailableTours();
+    
+    // Clear any existing tour buttons
+    tourPresetsElement.innerHTML = '';
+    
+    // Add a button for each tour
+    tours.forEach((tour, index) => {
+        const buttonId = `T${(index+1).toString().padStart(2, '0')}`;
+        const button = document.createElement('button');
+        button.id = buttonId;
+        button.textContent = buttonId;
+        button.title = tour.name; // Set tooltip to tour name
+        button.setAttribute('data-file', tour.fileName);
+        
+        // Add event listener for tour button click
+        button.addEventListener('click', () => {
+            // Start tour playback with the selected tour data
+            import('./tour.js').then(module => {
+                if (module.isTourPlaying()) {
+                    console.log("Cannot start tour - another tour is already playing");
+                    return;
+                }
+                
+                // Start tour playback
+                module.startTourPlayback(tour.data);
+            });
+        });
+        
+        tourPresetsElement.appendChild(button);
+    });
+    
+    console.log(`Added ${tours.length} tour preset button(s)`);
+}
+
+// Make the tour menu draggable
+function makeTourMenuDraggable() {
+    if (!tourMenu) return;
+    
+    let isDragging = false;
+    let offsetX, offsetY;
+    
+    // When the mouse button is pressed on the menu, start the drag process
+    tourMenu.addEventListener('mousedown', startDrag);
+    
+    function startDrag(e) {
+        // Only allow dragging from the menu itself or its header
+        if (e.target === tourMenu || e.target.tagName === 'H2') {
+            isDragging = true;
+            
+            // Calculate the offset from the mouse position to the menu corner
+            const rect = tourMenu.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            
+            // Add the document-level event listeners
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            
+            // Prevent default behavior and text selection
+            e.preventDefault();
+        }
+    }
+    
+    function drag(e) {
+        if (!isDragging) return;
+        
+        // Calculate the new position based on mouse coordinates and offset
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+        
+        // Update the menu position directly with fixed positioning
+        tourMenu.style.left = x + 'px';
+        tourMenu.style.top = y + 'px';
+        
+        // Remove the transform property that centers the menu
+        tourMenu.style.transform = 'none';
+        
+        e.preventDefault();
+    }
+    
+    function stopDrag() {
+        isDragging = false;
+        
+        // Remove the document-level event listeners when done dragging
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+    }
+}
+
 // Initialize preset buttons and visibility
 initPresetButtons();
 updatePresetMenuVisibility();
+// Initialize tour menu buttons
+initTourButtons();
+// Initialize tour preset buttons (returns a promise)
+initTourPresetButtons();
+// Make tour menu draggable
+makeTourMenuDraggable();

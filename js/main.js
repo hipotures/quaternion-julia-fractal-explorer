@@ -6,6 +6,7 @@ import { initInteractions } from './interactions.js';
 import { updateStatsPanel, setPauseVisuals } from './ui.js';
 import { updateTimeUniform } from './shaders.js'; // Import time uniform update
 import { initRecorder } from './recorder.js'; // Import recorder initialization
+import { updateTourPlayback, isTourPlaying } from './tour.js'; // Import tour functions
 
 // --- Global State ---
 let clock = new THREE.Clock(); // THREE.js clock for managing time delta
@@ -97,6 +98,11 @@ function animate() {
     updateTargetAnimation(delta);   // Update smooth camera transitions
     updateCameraMovement(delta);    // Update forward/backward movement
     checkReturnToStart();           // Check if camera needs to return
+    
+    // Update tour playback if active
+    if (isTourPlaying()) {
+        updateTourPlayback(delta);  // Update tour animation
+    }
 
     // Update UI
     // Check if we need to update stats even when hidden
