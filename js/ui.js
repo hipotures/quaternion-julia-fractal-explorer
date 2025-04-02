@@ -39,52 +39,52 @@ export function updateStatsPanel(forceUpdate = false) {
     if (!isSelecting) {
         const speedPercent = Math.abs(cameraState.moveVelocity / cameraState.maxVelocity * 100).toFixed(1);
         const speedDirection = cameraState.moveVelocity > 0.0001 ? 'forward' : cameraState.moveVelocity < -0.0001 ? 'backward' : 'stop';
+        const clipModeText = 
+            crossSectionSettings.clipMode === 0 ? 'OFF' : 
+            crossSectionSettings.clipMode === 1 ? 'METHOD 1' : 
+            crossSectionSettings.clipMode === 2 ? 'METHOD 2' : 'METHOD 3';
 
-        statsElement.innerHTML =
-            `<div class="stats-category">Fractal Parameters</div>` +
-            `<b>Param c:</b> (${fractalState.params.x.toFixed(3)}, ${fractalState.params.y.toFixed(3)}, ${fractalState.params.z.toFixed(3)}, ${fractalState.params.w.toFixed(3)})<br>` +
-            `<b>Slice:</b> ${fractalState.sliceValue >= 0 ? '+' : ''}${fractalState.sliceValue.toFixed(3)}${fractalState.animateSlice ? ' (anim)' : ' (stop)'} Range: ${-fractalState.sliceAmplitude.toFixed(1)} to +${fractalState.sliceAmplitude.toFixed(1)}<br>` +
-            `<b>Palette:</b> ${colorSettings.paletteIndex === 0 ? 'OFF' : colorSettings.paletteIndex}<br>` +
+        statsElement.innerHTML = `
+            <div class="stats-category">Fractal Parameters</div>
+            <b>Param c:</b> (${fractalState.params.x.toFixed(3)}, ${fractalState.params.y.toFixed(3)}, ${fractalState.params.z.toFixed(3)}, ${fractalState.params.w.toFixed(3)})<br>
+            <b>Slice:</b> ${fractalState.sliceValue >= 0 ? '+' : ''}${fractalState.sliceValue.toFixed(3)}${fractalState.animateSlice ? ' (anim)' : ' (stop)'} Range: ${-fractalState.sliceAmplitude.toFixed(1)} to +${fractalState.sliceAmplitude.toFixed(1)}<br>
+            <b>Palette:</b> ${colorSettings.paletteIndex === 0 ? 'OFF' : colorSettings.paletteIndex}<br>
             
-            `<hr class="stats-separator">` +
+            <hr class="stats-separator">
             
-            `<div class="stats-category">Camera</div>` +
-            `<b>Position:</b> (${cameraState.position.x.toFixed(3)}, ${cameraState.position.y.toFixed(3)}, ${cameraState.position.z.toFixed(3)})<br>` +
-            `<b>Direction:</b> Pitch: ${cameraState.pitch.toFixed(2)}, Yaw: ${cameraState.yaw.toFixed(2)}<br>` +
-            `<b>Speed:</b> ${speedPercent}% ${speedDirection}<br>` +
-            `<b>Radius:</b> ${cameraState.radius.toFixed(2)}<br>` +
-            `<b>Focal L:</b> ${cameraState.focalLength.toFixed(2)}<br>` +
+            <div class="stats-category">Camera</div>
+            <b>Position:</b> (${cameraState.position.x.toFixed(3)}, ${cameraState.position.y.toFixed(3)}, ${cameraState.position.z.toFixed(3)})<br>
+            <b>Direction:</b> Pitch: ${cameraState.pitch.toFixed(2)}, Yaw: ${cameraState.yaw.toFixed(2)}<br>
+            <b>Speed:</b> ${speedPercent}% ${speedDirection}<br>
+            <b>Radius:</b> ${cameraState.radius.toFixed(2)}<br>
+            <b>Focal L:</b> ${cameraState.focalLength.toFixed(2)}<br>
             
-            `<hr class="stats-separator">` +
+            <hr class="stats-separator">
             
-            `<div class="stats-category">Cross-Section</div>` +
-            `<b>Mode:</b> ${
-                crossSectionSettings.clipMode === 0 ? 'OFF' : 
-                crossSectionSettings.clipMode === 1 ? 'METHOD 1' : 
-                crossSectionSettings.clipMode === 2 ? 'METHOD 2' : 'METHOD 3'
-            }<br>` +
-            `${crossSectionSettings.clipMode > 0 ? `<b>Distance:</b> ${crossSectionSettings.clipDistance.toFixed(2)}<br>` : ''}` +
+            <div class="stats-category">Cross-Section</div>
+            <b>Mode:</b> ${clipModeText}<br>
+            ${crossSectionSettings.clipMode > 0 ? 
+                `<b>Distance:</b> ${crossSectionSettings.clipDistance.toFixed(2)}<br>` : 
+                ''}
             
-            `<hr class="stats-separator">` +
+            <hr class="stats-separator">
             
-            `<div class="stats-category">Quality Settings</div>` +
-            `<b>Iterations:</b> ${qualitySettings.maxIter}<br>` +
-            `<b>Shadows:</b> ${qualitySettings.enableShadows ? 'ON' : 'OFF'}<br>` +
-            `<b>AO:</b> ${qualitySettings.enableAO ? 'ON' : 'OFF'}<br>` +
-            `<b>Smooth:</b> ${qualitySettings.enableSmoothColor ? 'ON' : 'OFF'}<br>` +
-            `<b>Specular:</b> ${qualitySettings.enableSpecular ? 'ON' : 'OFF'}<br>` +
-            `<b>Adaptive RM:</b> ${qualitySettings.enableAdaptiveSteps ? 'ON' : 'OFF'}<br>` +
+            <div class="stats-category">Quality Settings</div>
+            <b>Iterations:</b> ${qualitySettings.maxIter}<br>
+            <b>Shadows:</b> ${qualitySettings.enableShadows ? 'ON' : 'OFF'}<br>
+            <b>AO:</b> ${qualitySettings.enableAO ? 'ON' : 'OFF'}<br>
+            <b>Smooth:</b> ${qualitySettings.enableSmoothColor ? 'ON' : 'OFF'}<br>
+            <b>Specular:</b> ${qualitySettings.enableSpecular ? 'ON' : 'OFF'}<br>
+            <b>Adaptive RM:</b> ${qualitySettings.enableAdaptiveSteps ? 'ON' : 'OFF'}<br>
             
-            `<hr class="stats-separator">` +
+            <hr class="stats-separator">
             
-            `<div class="stats-category">System</div>` +
-            `<b>FPS:</b> ${getFps().toFixed(1)}<br>` +
-            `<b>Animations:</b> ${cameraState.animationEnabled ? 'ON' : 'OFF'}<br>` +
-            `<b>Deceleration:</b> ${cameraState.decelerationEnabled ? 'ON' : 'OFF'}<br>` +
-            `<b>Recording:</b> ${getRecordingQuality() || 'NORMAL'}<br>`;
-            
-            // No longer needed for debugging
-            // console.log("Current recording quality:", getRecordingQuality());
+            <div class="stats-category">System</div>
+            <b>FPS:</b> ${getFps().toFixed(1)}<br>
+            <b>Animations:</b> ${cameraState.animationEnabled ? 'ON' : 'OFF'}<br>
+            <b>Deceleration:</b> ${cameraState.decelerationEnabled ? 'ON' : 'OFF'}<br>
+            <b>Recording:</b> ${getRecordingQuality() || 'NORMAL'}<br>
+        `;
     }
 }
 
