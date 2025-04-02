@@ -115,12 +115,6 @@ function handleNavigationKeys(key, isCtrlModifier) {
             cameraState.focalLength = Math.max(0.1, cameraState.focalLength - 0.1);
             updateCameraState(); // Update uniforms
             break;
-            
-        // Deprecated keys (kept for backward compatibility)
-        case 'x':
-        case 'z':
-            // Functionality removed
-            break;
     }
 }
 
@@ -212,10 +206,7 @@ function handleSystemKeys(key) {
             cameraState.animationEnabled = !cameraState.animationEnabled;
             console.log("Animations:", cameraState.animationEnabled ? "ON" : "OFF");
             break;
-        case CONFIG.KEYS.TOGGLE_DECELERATION:
-            cameraState.decelerationEnabled = !cameraState.decelerationEnabled;
-            console.log("Deceleration:", cameraState.decelerationEnabled ? "ON" : "OFF");
-            break;
+        // Removed deceleration toggle (D key) - now controlled only by middle mouse button
             
         // Pause / movement
         case CONFIG.KEYS.SPACE:
@@ -269,7 +260,7 @@ function handleKeyDown(e) {
     }
     // Navigation controls
     else if ([CONFIG.KEYS.ARROW_LEFT, CONFIG.KEYS.ARROW_RIGHT, CONFIG.KEYS.ARROW_UP, CONFIG.KEYS.ARROW_DOWN, 
-              CONFIG.KEYS.PLUS, CONFIG.KEYS.EQUALS, CONFIG.KEYS.MINUS, 'z', 'x'].includes(key)) {
+              CONFIG.KEYS.PLUS, CONFIG.KEYS.EQUALS, CONFIG.KEYS.MINUS].includes(key)) {
         handleNavigationKeys(key, isCtrlPressed);
     }
     // Quality controls
@@ -288,7 +279,7 @@ function handleKeyDown(e) {
         handleSliceKeys(key);
     }
     // System controls
-    else if ([CONFIG.KEYS.RESET, CONFIG.KEYS.TOGGLE_ANIMATION, CONFIG.KEYS.SPACE, CONFIG.KEYS.TOGGLE_DECELERATION,
+    else if ([CONFIG.KEYS.RESET, CONFIG.KEYS.TOGGLE_ANIMATION, CONFIG.KEYS.SPACE,
               CONFIG.KEYS.TOGGLE_RECORDING, CONFIG.KEYS.CYCLE_QUALITY].includes(key)) {
         handleSystemKeys(key);
     }

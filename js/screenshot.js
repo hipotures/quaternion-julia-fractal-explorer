@@ -176,11 +176,7 @@ async function saveFractalState(baseFilename) {
     }
 }
 
-// For future reference - this function is no longer used since we only support fractal-only screenshots
-function takeFullPageScreenshot() {
-    // Function removed - we don't support UI screenshots anymore
-    throw new Error("UI screenshots not supported - use browser's screenshot tool instead");
-}
+// Function removesd - UI screenshots are not supported
 
 // Main function for taking a screenshot
 export async function takeScreenshot(includeUI = false) {
@@ -203,16 +199,8 @@ export async function takeScreenshot(includeUI = false) {
         
         let screenshotData;
         
-        if (includeUI) {
-            try {
-                // Attempt to capture full screen with UI
-                screenshotData = await takeFullPageScreenshot();
-            } catch (error) {
-                console.error("Full page screenshot failed, falling back to canvas only:", error);
-                // Fallback to regular canvas screenshot
-                includeUI = false;
-            }
-        }
+        // UI screenshots not supported, always use canvas only
+        includeUI = false;
         
         if (!includeUI) {
             // Hide UI before screenshot
