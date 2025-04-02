@@ -1,6 +1,6 @@
 # Quaternion Julia Fractal Explorer
 
-![Quaternion Julia Fractal](https://examples.4d-fractal.eu/preview.jpg)
+![Quaternion Julia Fractal](images/image01.png)
 
 ## Overview
 
@@ -175,6 +175,26 @@ The application includes a comprehensive tour recording and playback system:
    - Camera paths follow natural movement trajectories
 
 For more details about the tour system, see the [TOUR.md](TOUR.md) documentation file.
+
+## Gallery
+
+<table>
+<tr>
+<td><img src="images/image03.png" alt="Quaternion Julia Fractal"></td>
+<td><img src="images/image09.png" alt="Quaternion Julia Fractal"></td>
+<td><img src="images/image10.png" alt="Quaternion Julia Fractal"></td>
+</tr>
+<tr>
+<td><img src="images/image02.png" alt="Quaternion Julia Fractal"></td>
+<td><img src="images/image04.png" alt="Quaternion Julia Fractal"></td>
+<td><img src="images/image05.png" alt="Quaternion Julia Fractal"></td>
+</tr>
+<tr>
+<td><img src="images/image06.png" alt="Quaternion Julia Fractal"></td>
+<td><img src="images/image07.png" alt="Quaternion Julia Fractal"></td>
+<td><img src="images/image08.png" alt="Quaternion Julia Fractal"></td>
+</tr>
+</table>
 
 ## Constant Velocity Movement
 
