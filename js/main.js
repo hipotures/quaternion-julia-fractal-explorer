@@ -14,6 +14,7 @@ import { updateStatsPanel, setPauseVisuals } from './ui.js';
 import { updateTimeUniform } from './shaders.js';
 import { initRecorder } from './recorder.js';
 import { updateTourPlayback, isTourPlaying } from './tour.js';
+import { initTweakpane, refreshUI } from './tweakpane-ui.js';
 
 /**
  * Global application state variables
@@ -163,6 +164,9 @@ function animate() {
             // Regular update
             updateStatsPanel();
         }
+        
+        // Update Tweakpane UI to keep it in sync with application state
+        refreshUI();
 
         // Render scene
         renderer.render(scene, camera);
@@ -207,6 +211,9 @@ async function init() {
         initRecorder();             // Initialize video recording functionality
         window.addEventListener('resize', handleResize); // Add resize listener
 
+        // Initialize Tweakpane UI
+        initTweakpane();
+        
         // Validate clip settings after a short delay to ensure uniforms are loaded
         setTimeout(validateClipSettings, 500);
 

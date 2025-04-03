@@ -27,6 +27,7 @@ import { toggleStats, toggleMenu, toggleTourMenu } from './ui.js';
 import { togglePause, isPaused } from './main.js'; // Need isPaused to prevent input during pause
 import { toggleRecording, isCurrentlyRecording, cycleQuality } from './recorder.js'; // Import recording functions
 import { isTourPlaying, stopTourPlayback } from './tour.js'; // Import tour functions
+import { toggleTweakpaneVisibility } from './tweakpane-ui.js'; // Import Tweakpane UI toggle
 
 // --- Interaction State ---
 let isCtrlPressed = false;
@@ -75,7 +76,7 @@ function estimateSimpleDistance(pos) {
 
 // --- Key handlers for different functional groups ---
 
-// Handle UI-related keys (stats, menu, tour)
+// Handle UI-related keys (stats, menu, tour, tweakpane)
 function handleUIKeys(key) {
     switch (key.toLowerCase()) {
         case CONFIG.KEYS.TOGGLE_STATS:
@@ -86,6 +87,9 @@ function handleUIKeys(key) {
             break;
         case CONFIG.KEYS.TOGGLE_TOUR:
             toggleTourMenu();
+            break;
+        case CONFIG.KEYS.TOGGLE_TWEAKPANE:
+            toggleTweakpaneVisibility();
             break;
     }
 }
@@ -334,7 +338,7 @@ function handleKeyDown(e) {
     }
     
     // UI controls
-    if ([CONFIG.KEYS.TOGGLE_STATS, CONFIG.KEYS.TOGGLE_MENU, CONFIG.KEYS.TOGGLE_TOUR].includes(key)) {
+    if ([CONFIG.KEYS.TOGGLE_STATS, CONFIG.KEYS.TOGGLE_MENU, CONFIG.KEYS.TOGGLE_TOUR, CONFIG.KEYS.TOGGLE_TWEAKPANE].includes(key)) {
         handleUIKeys(key);
     }
     // Navigation controls

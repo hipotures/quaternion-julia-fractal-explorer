@@ -131,6 +131,7 @@ export const CONFIG = {
         RESET: 'r',
         TOGGLE_ANIMATION: 'a',
         TOGGLE_SLICE_ANIMATION: '0',
+        TOGGLE_TWEAKPANE: 'g', // Use G key to toggle advanced controls panel
         // Rendering quality
         INCREASE_ITERATIONS: '1',
         DECREASE_ITERATIONS: '2',
