@@ -20,7 +20,6 @@ export const uniforms = {
   u_colorEnabled:     { value: false }, // Initial value
   u_focalLength:      { value: 1.5 },   // Initial value
 
-  // Render quality settings
   u_maxIter:          { value: 100 },     // Initial value
   u_enableShadows:    { value: false },   // Initial value
   u_enableAO:         { value: false },   // Initial value
@@ -187,6 +186,24 @@ export const fragmentShader = `
   uniform bool  u_adaptiveSteps;
   uniform int   u_clipMode;      // Cross section mode (0: off, 1: method 1, 2: method 2)
   uniform float u_clipDistance;  // Distance of clipping plane from camera
+  
+  // Dynamic color uniforms
+  uniform float u_colorSaturation;
+  uniform float u_colorBrightness;
+  uniform float u_colorContrast;
+  uniform float u_colorPhaseShift;
+  uniform bool  u_colorAnimEnabled;
+  uniform float u_colorAnimSpeed;
+  
+  // Orbit trap uniforms
+  uniform bool  u_orbitTrapEnabled;
+  uniform int   u_orbitTrapType;
+  uniform vec4  u_orbitTrapParams;
+  
+  // Physics-based coloring uniforms
+  uniform bool  u_physicsBasedColor;
+  uniform int   u_physicsColorType;
+  uniform vec4  u_physicsParams;
 
   varying vec2 vUv;
 
@@ -451,64 +468,6 @@ export const fragmentShader = `
       offset.b + amp.b * sin(freq * t + phase.b)
     );
   }
-  
-  // RGB to HSL conversion
-  vec3 rgb2hsl(vec3 color) {
-    float maxVal = max(max(color.r, color.g), color.b);
-    float minVal = min(min(color.r, color.g), color.b);
-    float delta = maxVal - minVal;
-    
-    float h = 0.0;
-    float s = 0.0;
-    float l = (maxVal + minVal) / 2.0;
-    
-    if (delta > 0.0) {
-      s = l < 0.5 ? delta / (maxVal + minVal) : delta / (2.0 - maxVal - minVal);
-      
-      if (color.r == maxVal) {
-        h = (color.g - color.b) / delta + (color.g < color.b ? 6.0 : 0.0);
-      } else if (color.g == maxVal) {
-        h = (color.b - color.r) / delta + 2.0;
-      } else {
-        h = (color.r - color.g) / delta + 4.0;
-      }
-      h /= 6.0;
-    }
-    
-    return vec3(h, s, l);
-  }
-  
-  // HSL to RGB conversion
-  vec3 hsl2rgb(vec3 hsl) {
-    float h = hsl.x;
-    float s = hsl.y;
-    float l = hsl.z;
-    
-    float r, g, b;
-    
-    if (s == 0.0) {
-      r = g = b = l; // Grayscale
-    } else {
-      float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
-      float p = 2.0 * l - q;
-      
-      r = hue2rgb(p, q, h + 1.0/3.0);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1.0/3.0);
-    }
-    
-    return vec3(r, g, b);
-  }
-  
-  // Helper for HSL to RGB
-  float hue2rgb(float p, float q, float t) {
-    if (t < 0.0) t += 1.0;
-    if (t > 1.0) t -= 1.0;
-    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
-    if (t < 1.0/2.0) return q;
-    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
-    return p;
-  }
 
   // Individual palette definitions - each has a descriptive comment
   // and uses the most appropriate technique for its color scheme
@@ -622,7 +581,7 @@ export const fragmentShader = `
     }
   }
 
-  // Function to calculate orbit trap value
+    // Function to calculate orbit trap value
   float calcOrbitTrap(vec3 pos) {
     vec4 z = vec4(pos, u_slice);
     vec4 c = u_c;
@@ -662,6 +621,64 @@ export const fragmentShader = `
     
     // Transform distance to coloring value (0-1)
     return 1.0 - clamp(minDistance * u_orbitTrapParams.w, 0.0, 1.0);
+  }
+  
+  // RGB to HSL conversion
+  vec3 rgb2hsl(vec3 color) {
+    float maxVal = max(max(color.r, color.g), color.b);
+    float minVal = min(min(color.r, color.g), color.b);
+    float delta = maxVal - minVal;
+    
+    float h = 0.0;
+    float s = 0.0;
+    float l = (maxVal + minVal) / 2.0;
+    
+    if (delta > 0.0) {
+      s = l < 0.5 ? delta / (maxVal + minVal) : delta / (2.0 - maxVal - minVal);
+      
+      if (color.r == maxVal) {
+        h = (color.g - color.b) / delta + (color.g < color.b ? 6.0 : 0.0);
+      } else if (color.g == maxVal) {
+        h = (color.b - color.r) / delta + 2.0;
+      } else {
+        h = (color.r - color.g) / delta + 4.0;
+      }
+      h /= 6.0;
+    }
+    
+    return vec3(h, s, l);
+  }
+  
+  // Helper for HSL to RGB conversion
+  float hue2rgb(float p, float q, float t) {
+    if (t < 0.0) t += 1.0;
+    if (t > 1.0) t -= 1.0;
+    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if (t < 1.0/2.0) return q;
+    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
+  }
+  
+  // HSL to RGB conversion
+  vec3 hsl2rgb(vec3 hsl) {
+    float h = hsl.x;
+    float s = hsl.y;
+    float l = hsl.z;
+    
+    vec3 rgb;
+    
+    if (s == 0.0) {
+      rgb = vec3(l); // Grayscale
+    } else {
+      float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+      float p = 2.0 * l - q;
+      
+      rgb.r = hue2rgb(p, q, h + 1.0/3.0);
+      rgb.g = hue2rgb(p, q, h);
+      rgb.b = hue2rgb(p, q, h - 1.0/3.0);
+    }
+    
+    return rgb;
   }
   
   // Apply dynamic color adjustments to a base color
