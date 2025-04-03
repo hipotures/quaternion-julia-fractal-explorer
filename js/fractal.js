@@ -86,10 +86,72 @@ export const colorSettings = {
     paletteIndex: 0
 };
 
+/**
+ * Dynamic color effect settings for controlling color appearance
+ * @type {Object}
+ */
+export const colorDynamicsSettings = {
+    /** Color saturation multiplier (0.0-2.0) */
+    saturation: 1.0,
+    /** Brightness multiplier (0.0-2.0) */
+    brightness: 1.0,
+    /** Contrast adjustment (0.0-2.0) */
+    contrast: 1.0,
+    /** Phase shift for colors in radians (0.0-6.28) */
+    phaseShift: 0.0,
+    /** Toggle for automatic color animation */
+    animationEnabled: false,
+    /** Animation speed for color cycling */
+    animationSpeed: 0.5
+};
+
+/**
+ * Orbit trap settings for psychedelic color mapping
+ * @type {Object}
+ */
+export const orbitTrapSettings = {
+    /** Toggle for enabling orbit trap coloring */
+    enabled: false,
+    /** Orbit trap type (0: circle, 1: line, 2: point, 3: cross) */
+    type: 0,
+    /** Radius/size of the trap */
+    radius: 1.0,
+    /** X coordinate for point trap */
+    x: 0.0,
+    /** Y coordinate for point trap */
+    y: 0.0,
+    /** Z coordinate for point trap */
+    z: 0.0,
+    /** Intensity of the trap effect (higher = sharper contrast) */
+    intensity: 1.0
+};
+
+/**
+ * Physics-based color effect settings
+ * @type {Object}
+ */
+export const physicsColorSettings = {
+    /** Toggle for enabling physics-based coloring */
+    enabled: false,
+    /** Effect type (0: diffraction, 1: interference, 2: emission spectrum) */
+    type: 0,
+    /** Frequency of the physical effect pattern */
+    frequency: 1.0,
+    /** Number of waves/periods in the pattern */
+    waves: 5.0,
+    /** Intensity of the effect */
+    intensity: 1.0,
+    /** Balance between physics effect and standard palette (0.0-1.0) */
+    balance: 0.5
+};
+
 // Expose states globally for debugging and compatibility with legacy code
 window.fractalState = fractalState;
 window.qualitySettings = qualitySettings;
 window.colorSettings = colorSettings;
+window.colorDynamicsSettings = colorDynamicsSettings;
+window.orbitTrapSettings = orbitTrapSettings;
+window.physicsColorSettings = physicsColorSettings;
 
 // --- Fractal Parameter Update Functions ---
 
@@ -277,6 +339,197 @@ export function changePalette() {
     console.log("Palette:", colorSettings.paletteIndex === 0 ? "OFF" : colorSettings.paletteIndex);
 }
 
+// --- Dynamic Color Control Functions ---
+
+/**
+ * Toggles automatic color animation on/off
+ */
+export function toggleColorAnimation() {
+    colorDynamicsSettings.animationEnabled = !colorDynamicsSettings.animationEnabled;
+    updateColorDynamicsUniforms(colorDynamicsSettings);
+    console.log("Color Animation:", colorDynamicsSettings.animationEnabled ? "ON" : "OFF");
+}
+
+/**
+ * Changes the color saturation
+ * @param {number} delta - Amount to increase/decrease saturation by
+ */
+export function changeColorSaturation(delta) {
+    colorDynamicsSettings.saturation = Math.max(0.0, Math.min(2.0, 
+        colorDynamicsSettings.saturation + delta));
+    updateColorDynamicsUniforms(colorDynamicsSettings);
+    console.log("Color Saturation:", colorDynamicsSettings.saturation.toFixed(2));
+}
+
+/**
+ * Changes the color brightness
+ * @param {number} delta - Amount to increase/decrease brightness by
+ */
+export function changeColorBrightness(delta) {
+    colorDynamicsSettings.brightness = Math.max(0.0, Math.min(2.0, 
+        colorDynamicsSettings.brightness + delta));
+    updateColorDynamicsUniforms(colorDynamicsSettings);
+    console.log("Color Brightness:", colorDynamicsSettings.brightness.toFixed(2));
+}
+
+/**
+ * Changes the color contrast
+ * @param {number} delta - Amount to increase/decrease contrast by
+ */
+export function changeColorContrast(delta) {
+    colorDynamicsSettings.contrast = Math.max(0.0, Math.min(2.0, 
+        colorDynamicsSettings.contrast + delta));
+    updateColorDynamicsUniforms(colorDynamicsSettings);
+    console.log("Color Contrast:", colorDynamicsSettings.contrast.toFixed(2));
+}
+
+/**
+ * Changes the color phase shift
+ * @param {number} delta - Amount to increase/decrease phase shift by (in radians)
+ */
+export function changeColorPhaseShift(delta) {
+    colorDynamicsSettings.phaseShift = (colorDynamicsSettings.phaseShift + delta) % (Math.PI * 2);
+    if (colorDynamicsSettings.phaseShift < 0) colorDynamicsSettings.phaseShift += Math.PI * 2;
+    
+    updateColorDynamicsUniforms(colorDynamicsSettings);
+    console.log("Color Phase Shift:", (colorDynamicsSettings.phaseShift / Math.PI).toFixed(2) + "π");
+}
+
+/**
+ * Changes the color animation speed
+ * @param {number} delta - Amount to increase/decrease animation speed by
+ */
+export function changeColorAnimationSpeed(delta) {
+    colorDynamicsSettings.animationSpeed = Math.max(0.05, Math.min(2.0, 
+        colorDynamicsSettings.animationSpeed + delta));
+    updateColorDynamicsUniforms(colorDynamicsSettings);
+    console.log("Color Animation Speed:", colorDynamicsSettings.animationSpeed.toFixed(2));
+}
+
+// --- Orbit Trap Functions ---
+
+/**
+ * Toggles orbit trap coloring on/off
+ */
+export function toggleOrbitTrap() {
+    orbitTrapSettings.enabled = !orbitTrapSettings.enabled;
+    
+    // Disable physics-based coloring if orbit trap is enabled (they are exclusive)
+    if (orbitTrapSettings.enabled && physicsColorSettings.enabled) {
+        physicsColorSettings.enabled = false;
+        updatePhysicsColorUniforms(physicsColorSettings);
+    }
+    
+    updateOrbitTrapUniforms(orbitTrapSettings);
+    console.log("Orbit Trap:", orbitTrapSettings.enabled ? "ON" : "OFF");
+}
+
+/**
+ * Cycles through orbit trap types
+ * Types: Circle -> Line -> Point -> Cross -> Circle
+ */
+export function cycleOrbitTrapType() {
+    orbitTrapSettings.type = (orbitTrapSettings.type + 1) % 4;
+    updateOrbitTrapUniforms(orbitTrapSettings);
+    
+    const typeNames = ["Circle", "Line", "Point", "Cross"];
+    console.log("Orbit Trap Type:", typeNames[orbitTrapSettings.type]);
+}
+
+/**
+ * Changes the orbit trap radius/size
+ * @param {number} delta - Amount to increase/decrease radius by
+ */
+export function changeOrbitTrapRadius(delta) {
+    orbitTrapSettings.radius = Math.max(0.1, orbitTrapSettings.radius + delta);
+    updateOrbitTrapUniforms(orbitTrapSettings);
+    console.log("Orbit Trap Radius:", orbitTrapSettings.radius.toFixed(2));
+}
+
+/**
+ * Changes the orbit trap intensity
+ * @param {number} delta - Amount to increase/decrease intensity by
+ */
+export function changeOrbitTrapIntensity(delta) {
+    orbitTrapSettings.intensity = Math.max(0.1, Math.min(5.0, orbitTrapSettings.intensity + delta));
+    updateOrbitTrapUniforms(orbitTrapSettings);
+    console.log("Orbit Trap Intensity:", orbitTrapSettings.intensity.toFixed(2));
+}
+
+// --- Physics-Based Color Functions ---
+
+/**
+ * Toggles physics-based coloring on/off
+ */
+export function togglePhysicsColor() {
+    physicsColorSettings.enabled = !physicsColorSettings.enabled;
+    
+    // Disable orbit trap if physics-based coloring is enabled (they are exclusive)
+    if (physicsColorSettings.enabled && orbitTrapSettings.enabled) {
+        orbitTrapSettings.enabled = false;
+        updateOrbitTrapUniforms(orbitTrapSettings);
+    }
+    
+    updatePhysicsColorUniforms(physicsColorSettings);
+    console.log("Physics-based Color:", physicsColorSettings.enabled ? "ON" : "OFF");
+}
+
+/**
+ * Cycles through physics-based color types
+ * Types: Diffraction -> Interference -> Emission Spectrum -> Diffraction
+ */
+export function cyclePhysicsColorType() {
+    physicsColorSettings.type = (physicsColorSettings.type + 1) % 3;
+    updatePhysicsColorUniforms(physicsColorSettings);
+    
+    const typeNames = ["Diffraction", "Interference", "Emission Spectrum"];
+    console.log("Physics Color Type:", typeNames[physicsColorSettings.type]);
+}
+
+/**
+ * Changes the physics effect frequency
+ * @param {number} delta - Amount to increase/decrease frequency by
+ */
+export function changePhysicsFrequency(delta) {
+    physicsColorSettings.frequency = Math.max(0.1, Math.min(5.0, 
+        physicsColorSettings.frequency + delta));
+    updatePhysicsColorUniforms(physicsColorSettings);
+    console.log("Physics Frequency:", physicsColorSettings.frequency.toFixed(2));
+}
+
+/**
+ * Changes the number of waves/periods in the physics pattern
+ * @param {number} delta - Amount to increase/decrease wave count by
+ */
+export function changePhysicsWaves(delta) {
+    physicsColorSettings.waves = Math.max(1.0, Math.min(20.0, 
+        physicsColorSettings.waves + delta));
+    updatePhysicsColorUniforms(physicsColorSettings);
+    console.log("Physics Waves:", physicsColorSettings.waves.toFixed(1));
+}
+
+/**
+ * Changes the physics effect intensity
+ * @param {number} delta - Amount to increase/decrease intensity by
+ */
+export function changePhysicsIntensity(delta) {
+    physicsColorSettings.intensity = Math.max(0.1, Math.min(2.0, 
+        physicsColorSettings.intensity + delta));
+    updatePhysicsColorUniforms(physicsColorSettings);
+    console.log("Physics Intensity:", physicsColorSettings.intensity.toFixed(2));
+}
+
+/**
+ * Changes the balance between physics effect and standard palette color
+ * @param {number} delta - Amount to increase/decrease balance by
+ */
+export function changePhysicsBalance(delta) {
+    physicsColorSettings.balance = Math.max(0.0, Math.min(1.0, 
+        physicsColorSettings.balance + delta));
+    updatePhysicsColorUniforms(physicsColorSettings);
+    console.log("Physics/Palette Balance:", physicsColorSettings.balance.toFixed(2));
+}
+
 // --- Initialize Shader Uniforms ---
 
 /**
@@ -295,6 +548,15 @@ function initializeUniforms() {
             colorEnabled: colorSettings.colorEnabled,
             paletteIndex: 0 // Initial shader index
         });
+        
+        // Update color dynamics uniforms
+        updateColorDynamicsUniforms(colorDynamicsSettings);
+        
+        // Update orbit trap uniforms
+        updateOrbitTrapUniforms(orbitTrapSettings);
+        
+        // Update physics-based color uniforms
+        updatePhysicsColorUniforms(physicsColorSettings);
         
         // Update slice uniform
         updateSliceUniform(fractalState.sliceValue);

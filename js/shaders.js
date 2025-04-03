@@ -20,15 +20,34 @@ export const uniforms = {
   u_colorEnabled:     { value: false }, // Initial value
   u_focalLength:      { value: 1.5 },   // Initial value
 
-  u_maxIter:          { value: 100 },   // Initial value
-  u_enableShadows:    { value: false },  // Initial value
-  u_enableAO:         { value: false },  // Initial value
-  u_enableSmoothColor:{ value: false },  // Initial value
-  u_enableSpecular:   { value: false },  // Initial value
-  u_paletteIndex:     { value: 0 },      // Initial value
+  // Render quality settings
+  u_maxIter:          { value: 100 },     // Initial value
+  u_enableShadows:    { value: false },   // Initial value
+  u_enableAO:         { value: false },   // Initial value
+  u_enableSmoothColor:{ value: false },   // Initial value
+  u_enableSpecular:   { value: false },   // Initial value
+  u_paletteIndex:     { value: 0 },       // Initial value
   u_adaptiveSteps:    { value: false },   // Initial value for adaptive ray marching
   u_clipMode:         { value: 0 },       // Cross section mode (0: off, 1: method 1, 2: method 2)
-  u_clipDistance:     { value: 3.5 }      // Distance of clipping plane from camera - zwiększona wartość
+  u_clipDistance:     { value: 3.5 },     // Distance of clipping plane from camera
+  
+  // Dynamic color effects
+  u_colorSaturation:  { value: 1.0 },     // Color saturation adjustment (0.0-2.0)
+  u_colorBrightness:  { value: 1.0 },     // Brightness adjustment (0.0-2.0)
+  u_colorContrast:    { value: 1.0 },     // Contrast adjustment (0.0-2.0)
+  u_colorPhaseShift:  { value: 0.0 },     // Color phase shift (0.0-6.28)
+  u_colorAnimEnabled: { value: false },   // Enable automatic color animation
+  u_colorAnimSpeed:   { value: 0.5 },     // Color animation speed
+  
+  // Orbit trap settings
+  u_orbitTrapEnabled: { value: false },   // Enable orbit trap coloring
+  u_orbitTrapType:    { value: 0 },       // Trap type (0: circle, 1: line, 2: point, 3: cross)
+  u_orbitTrapParams:  { value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) }, // Trap parameters
+  
+  // Physics-based coloring
+  u_physicsBasedColor:{ value: false },   // Enable physics-based coloring
+  u_physicsColorType: { value: 0 },       // Type (0: diffraction, 1: interference, 2: spectrum)
+  u_physicsParams:    { value: new THREE.Vector4(1.0, 5.0, 1.0, 0.5) } // Physics parameters
 };
 
 // Expose uniforms globally for potential debugging or compatibility needs
@@ -72,6 +91,53 @@ export function updateQualityUniforms(qualitySettings) {
 export function updateColorUniforms(colorSettings) {
     uniforms.u_colorEnabled.value = colorSettings.colorEnabled;
     uniforms.u_paletteIndex.value = colorSettings.paletteIndex;
+}
+
+/**
+ * Updates the dynamic color parameters uniforms
+ * @param {Object} dynamicsSettings - Object containing dynamic color parameters
+ */
+export function updateColorDynamicsUniforms(dynamicsSettings) {
+    uniforms.u_colorSaturation.value = dynamicsSettings.saturation;
+    uniforms.u_colorBrightness.value = dynamicsSettings.brightness;
+    uniforms.u_colorContrast.value = dynamicsSettings.contrast;
+    uniforms.u_colorPhaseShift.value = dynamicsSettings.phaseShift;
+    uniforms.u_colorAnimEnabled.value = dynamicsSettings.animationEnabled;
+    uniforms.u_colorAnimSpeed.value = dynamicsSettings.animationSpeed;
+}
+
+/**
+ * Updates the orbit trap parameters uniforms
+ * @param {Object} trapSettings - Object containing orbit trap parameters
+ */
+export function updateOrbitTrapUniforms(trapSettings) {
+    uniforms.u_orbitTrapEnabled.value = trapSettings.enabled;
+    uniforms.u_orbitTrapType.value = trapSettings.type;
+    
+    const params = new THREE.Vector4(
+        trapSettings.radius,
+        trapSettings.x,
+        trapSettings.y,
+        trapSettings.intensity
+    );
+    uniforms.u_orbitTrapParams.value.copy(params);
+}
+
+/**
+ * Updates the physics-based coloring parameters uniforms
+ * @param {Object} physicsSettings - Object containing physics-based coloring parameters
+ */
+export function updatePhysicsColorUniforms(physicsSettings) {
+    uniforms.u_physicsBasedColor.value = physicsSettings.enabled;
+    uniforms.u_physicsColorType.value = physicsSettings.type;
+    
+    const params = new THREE.Vector4(
+        physicsSettings.frequency,
+        physicsSettings.waves,
+        physicsSettings.intensity,
+        physicsSettings.balance
+    );
+    uniforms.u_physicsParams.value.copy(params);
 }
 
 export function updateAdaptiveStepsUniform(enabled) {
@@ -385,6 +451,64 @@ export const fragmentShader = `
       offset.b + amp.b * sin(freq * t + phase.b)
     );
   }
+  
+  // RGB to HSL conversion
+  vec3 rgb2hsl(vec3 color) {
+    float maxVal = max(max(color.r, color.g), color.b);
+    float minVal = min(min(color.r, color.g), color.b);
+    float delta = maxVal - minVal;
+    
+    float h = 0.0;
+    float s = 0.0;
+    float l = (maxVal + minVal) / 2.0;
+    
+    if (delta > 0.0) {
+      s = l < 0.5 ? delta / (maxVal + minVal) : delta / (2.0 - maxVal - minVal);
+      
+      if (color.r == maxVal) {
+        h = (color.g - color.b) / delta + (color.g < color.b ? 6.0 : 0.0);
+      } else if (color.g == maxVal) {
+        h = (color.b - color.r) / delta + 2.0;
+      } else {
+        h = (color.r - color.g) / delta + 4.0;
+      }
+      h /= 6.0;
+    }
+    
+    return vec3(h, s, l);
+  }
+  
+  // HSL to RGB conversion
+  vec3 hsl2rgb(vec3 hsl) {
+    float h = hsl.x;
+    float s = hsl.y;
+    float l = hsl.z;
+    
+    float r, g, b;
+    
+    if (s == 0.0) {
+      r = g = b = l; // Grayscale
+    } else {
+      float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+      float p = 2.0 * l - q;
+      
+      r = hue2rgb(p, q, h + 1.0/3.0);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1.0/3.0);
+    }
+    
+    return vec3(r, g, b);
+  }
+  
+  // Helper for HSL to RGB
+  float hue2rgb(float p, float q, float t) {
+    if (t < 0.0) t += 1.0;
+    if (t > 1.0) t -= 1.0;
+    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if (t < 1.0/2.0) return q;
+    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
+  }
 
   // Individual palette definitions - each has a descriptive comment
   // and uses the most appropriate technique for its color scheme
@@ -498,6 +622,130 @@ export const fragmentShader = `
     }
   }
 
+  // Function to calculate orbit trap value
+  float calcOrbitTrap(vec3 pos) {
+    vec4 z = vec4(pos, u_slice);
+    vec4 c = u_c;
+    float minDistance = 1000.0;  // Large initial value
+    
+    for (int i=0; i<30; i++) {  // Fewer iterations than main loop for performance
+      // Circle trap (distance from origin)
+      if (u_orbitTrapType == 0) {
+        float dist = length(z.xyz) - u_orbitTrapParams.x;
+        minDistance = min(minDistance, abs(dist));
+      }
+      // Line trap (distance from an axis)
+      else if (u_orbitTrapType == 1) {
+        float dist = length(z.xy) - u_orbitTrapParams.x;  // Distance from Z axis
+        minDistance = min(minDistance, abs(dist));
+      }
+      // Point trap (distance from a specified point)
+      else if (u_orbitTrapType == 2) {
+        vec3 point = vec3(u_orbitTrapParams.xyz);
+        float dist = length(z.xyz - point);
+        minDistance = min(minDistance, dist);
+      }
+      // Cross trap (minimum distance from any axis)
+      else if (u_orbitTrapType == 3) {
+        float distX = abs(z.x);
+        float distY = abs(z.y);
+        float distZ = abs(z.z);
+        minDistance = min(minDistance, min(min(distX, distY), distZ));
+      }
+      
+      // Next iteration
+      z = qmul(z, z) + c;
+      
+      // Exit condition
+      if (length(z) > 4.0) break;
+    }
+    
+    // Transform distance to coloring value (0-1)
+    return 1.0 - clamp(minDistance * u_orbitTrapParams.w, 0.0, 1.0);
+  }
+  
+  // Apply dynamic color adjustments to a base color
+  vec3 applyColorDynamics(vec3 color, float time) {
+    // Apply phase shift, potentially animated
+    float phaseShift = u_colorPhaseShift;
+    if (u_colorAnimEnabled) {
+      phaseShift += time * u_colorAnimSpeed;
+    }
+    
+    // Convert to HSL for better adjustments
+    vec3 hsl = rgb2hsl(color);
+    
+    // Apply hue shift (phase shift affects hue)
+    hsl.x = fract(hsl.x + phaseShift / (2.0 * 3.14159265));
+    
+    // Apply saturation
+    hsl.y = clamp(hsl.y * u_colorSaturation, 0.0, 1.0);
+    
+    // Apply brightness and contrast (to luminance)
+    // First apply contrast (relative to 0.5)
+    hsl.z = 0.5 + (hsl.z - 0.5) * u_colorContrast;
+    
+    // Then apply brightness
+    hsl.z = hsl.z * u_colorBrightness;
+    
+    // Clamp luminance
+    hsl.z = clamp(hsl.z, 0.0, 1.0);
+    
+    // Convert back to RGB
+    return hsl2rgb(hsl);
+  }
+  
+  // Generate physics-based color
+  vec3 getPhysicsBasedColor(float t, vec3 pos, vec3 normal) {
+    // Parameters
+    float frequency = u_physicsParams.x;   // Effect frequency
+    float waves = u_physicsParams.y;       // Number of waves/periods
+    float intensity = u_physicsParams.z;   // Effect intensity
+    float balance = u_physicsParams.w;     // Balance between effect and base color
+    
+    // Diffraction - rainbow effects
+    if (u_physicsColorType == 0) {
+      // Simulate diffraction - splitting light into spectrum colors
+      float angle = dot(normal, vec3(0.0, 1.0, 0.0)) * 0.5 + 0.5;
+      vec3 rainbow = sinePalette(
+        t * frequency + angle * waves,
+        6.28, 
+        vec3(0.0, 2.09, 4.19),  // 2π/3 phase shifts (120°)
+        vec3(intensity),
+        vec3(0.5)
+      );
+      return rainbow;
+    }
+    // Interference - oil-on-water effect
+    else if (u_physicsColorType == 1) {
+      // Simulate interference patterns like oil film
+      float d1 = length(pos.xy) * frequency;
+      float d2 = length(pos.yz) * frequency;
+      
+      vec3 color1 = sinePalette(d1, waves, vec3(0.0, 1.0, 2.0), vec3(0.5), vec3(0.5));
+      vec3 color2 = sinePalette(d2, waves, vec3(0.0, 1.0, 2.0), vec3(0.5), vec3(0.5));
+      
+      return mix(color1, color2, 0.5) * intensity;
+    }
+    // Emission spectrum - spectral lines
+    else if (u_physicsColorType == 2) {
+      // Simulate emission spectrum - sharp color lines
+      float val = fract(t * frequency * waves) * 10.0;
+      float lineIntensity = 1.0 - min(1.0, val); // Sharp lines
+      
+      // Different spectral lines for different "elements"
+      vec3 line1 = vec3(1.0, 0.2, 0.2) * step(0.9, lineIntensity); // Red line
+      vec3 line2 = vec3(0.2, 1.0, 0.2) * step(0.8, lineIntensity); // Green line
+      vec3 line3 = vec3(0.2, 0.2, 1.0) * step(0.7, lineIntensity); // Blue line
+      vec3 line4 = vec3(1.0, 1.0, 0.2) * step(0.6, lineIntensity); // Yellow line
+      
+      return (line1 + line2 + line3 + line4) * intensity;
+    }
+    
+    // Default - return standard color
+    return vec3(1.0);
+  }
+
   void main(){
       vec2 uv = (gl_FragCoord.xy / u_resolution.xy) * 2.0 - 1.0;
       uv.x *= u_resolution.x / u_resolution.y;
@@ -536,9 +784,33 @@ export const fragmentShader = `
         : getIterationCount(pos);
       float iterNorm = iCount / u_maxIter;
 
+      // Fractal coloring with advanced effects
       vec3 fractColor = vec3(1.0);
-      if(u_colorEnabled){
-        fractColor = getPalette(iterNorm, u_paletteIndex);
+      if(u_colorEnabled) {
+        if (u_physicsBasedColor) {
+          // Physics-based coloring
+          vec3 physicsColor = getPhysicsBasedColor(iterNorm, pos, normal);
+          
+          // Option to mix with standard palette color
+          if (u_physicsParams.w < 1.0) {
+            vec3 paletteColor = getPalette(iterNorm, u_paletteIndex);
+            fractColor = mix(paletteColor, physicsColor, u_physicsParams.w);
+          } else {
+            fractColor = physicsColor;
+          }
+        } 
+        else if (u_orbitTrapEnabled) {
+          // Orbit trap coloring
+          float trapValue = calcOrbitTrap(pos);
+          fractColor = getPalette(trapValue, u_paletteIndex);
+        } 
+        else {
+          // Standard iteration-based coloring
+          fractColor = getPalette(iterNorm, u_paletteIndex);
+        }
+        
+        // Apply dynamic color adjustments
+        fractColor = applyColorDynamics(fractColor, u_time);
       }
 
       // Diffuse

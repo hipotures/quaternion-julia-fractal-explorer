@@ -12,7 +12,15 @@ import {
     toggleSliceAnimation, changeIterations, toggleShadows, toggleAO,
     toggleSmoothColor, toggleSpecular, changePalette, changeSliceAmplitude,
     toggleAdaptiveSteps, crossSectionSettings, cycleClipMode,
-    increaseClipDistance, decreaseClipDistance
+    increaseClipDistance, decreaseClipDistance,
+    // Dynamic color functions
+    toggleColorAnimation, changeColorSaturation, changeColorBrightness,
+    changeColorContrast, changeColorPhaseShift, changeColorAnimationSpeed,
+    // Orbit trap functions
+    toggleOrbitTrap, cycleOrbitTrapType, changeOrbitTrapRadius, changeOrbitTrapIntensity,
+    // Physics-based color functions
+    togglePhysicsColor, cyclePhysicsColorType, changePhysicsFrequency,
+    changePhysicsWaves, changePhysicsIntensity, changePhysicsBalance
 } from './fractal.js';
 // Placeholder imports - these functions will be defined in their respective modules later
 import { toggleStats, toggleMenu, toggleTourMenu } from './ui.js';
@@ -148,6 +156,71 @@ function handleQualityKeys(key) {
     }
 }
 
+// Handle advanced color effects
+function handleColorEffectKeys(e) {
+    const key = e.key.toLowerCase();
+    const shift = e.shiftKey;
+    
+    // We'll use number keys with Shift for dynamic color controls
+    if (shift) {
+        switch (key) {
+            // Dynamic color effects (Shift + letter keys)
+            case 'c':
+                toggleColorAnimation();
+                break;
+            case 's':
+                changeColorSaturation(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'b':
+                changeColorBrightness(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'n':
+                changeColorContrast(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'p':
+                changeColorPhaseShift(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'a':
+                changeColorAnimationSpeed(e.ctrlKey ? -0.05 : 0.05);
+                break;
+                
+            // Orbit trap controls (Alt + letter keys)
+            case 'o':
+                toggleOrbitTrap();
+                break;
+            case 't':
+                cycleOrbitTrapType();
+                break;
+            case 'r':
+                changeOrbitTrapRadius(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'i':
+                changeOrbitTrapIntensity(e.ctrlKey ? -0.1 : 0.1);
+                break;
+                
+            // Physics-based coloring (Shift + number keys)
+            case 'f':
+                togglePhysicsColor();
+                break;
+            case 'y':
+                cyclePhysicsColorType();
+                break;
+            case 'q':
+                changePhysicsFrequency(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'w':
+                changePhysicsWaves(e.ctrlKey ? -0.5 : 0.5);
+                break;
+            case 'e':
+                changePhysicsIntensity(e.ctrlKey ? -0.1 : 0.1);
+                break;
+            case 'd':
+                changePhysicsBalance(e.ctrlKey ? -0.05 : 0.05);
+                break;
+        }
+    }
+}
+
 // Handle cross-section related keys
 function handleCrossSectionKeys(key) {
     switch (key.toLowerCase()) {
@@ -245,6 +318,12 @@ function handleKeyDown(e) {
         return; // Don't process Control key further
     }
 
+    // Handle advanced color effects (Shift + key combinations)
+    if (e.shiftKey) {
+        handleColorEffectKeys(e);
+        return;
+    }
+
     // Delegate to the appropriate handler based on key group
     const key = e.key.toLowerCase();
     
@@ -282,6 +361,16 @@ function handleKeyDown(e) {
     else if ([CONFIG.KEYS.RESET, CONFIG.KEYS.TOGGLE_ANIMATION, CONFIG.KEYS.SPACE,
               CONFIG.KEYS.TOGGLE_RECORDING, CONFIG.KEYS.CYCLE_QUALITY].includes(key)) {
         handleSystemKeys(key);
+    }
+    // Quick access to color effects
+    else if (key === 'o') {
+        toggleOrbitTrap();
+    }
+    else if (key === 'f') {
+        togglePhysicsColor();
+    }
+    else if (key === 'c') {
+        toggleColorAnimation();
     }
 }
 
