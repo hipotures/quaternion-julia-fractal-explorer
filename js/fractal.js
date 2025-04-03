@@ -14,7 +14,10 @@ import {
     updateColorUniforms,
     updateClipModeUniform,
     updateClipDistanceUniform,
-    updateAdaptiveStepsUniform
+    updateAdaptiveStepsUniform,
+    updateColorDynamicsUniforms,
+    updateOrbitTrapUniforms,
+    updatePhysicsColorUniforms
 } from './shaders.js';
 import { CONFIG } from './config.js';
 
