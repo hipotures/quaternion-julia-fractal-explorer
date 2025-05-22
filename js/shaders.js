@@ -1,4 +1,5 @@
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+import { CONFIG } from '../config.js';
 
 // Helper function to get rotation matrix (used in uniforms)
 export function getRotationMatrix(euler) {
@@ -46,11 +47,15 @@ export const uniforms = {
   // Physics-based coloring
   u_physicsBasedColor:{ value: false },   // Enable physics-based coloring
   u_physicsColorType: { value: 0 },       // Type (0: diffraction, 1: interference, 2: spectrum)
-  u_physicsParams:    { value: new THREE.Vector4(1.0, 5.0, 1.0, 0.5) } // Physics parameters
-};
+  u_physicsParams:    { value: new THREE.Vector4(1.0, 5.0, 1.0, 0.5) }, // Physics parameters
 
-// Expose uniforms globally for potential debugging or compatibility needs
-window.uniforms = uniforms;
+  // Raymarching parameters
+  u_maxMarchSteps:         { value: CONFIG.RAYMARCHING.MAX_MARCH_STEPS },
+  u_maxMarchDistance:      { value: CONFIG.RAYMARCHING.MAX_MARCH_DISTANCE },
+  u_hitThreshold:          { value: CONFIG.SHADER.HIT_THRESHOLD },
+  u_safeStep:              { value: CONFIG.SHADER.SAFE_STEP },
+  u_crossSectionThreshold: { value: CONFIG.SHADER.CROSS_SECTION_THRESHOLD }
+};
 
 // Functions to update specific uniform groups
 export function updateCameraUniforms(camPos, camRotMatrix) {
@@ -162,12 +167,6 @@ export const vertexShader = `
 `;
 
 export const fragmentShader = `
-  #define MAX_MARCH 256
-  #define MAX_DIST  150.0
-  #define HIT_THRESHOLD 0.0001
-  #define SAFE_STEP 0.002
-  #define CROSS_SECTION_THRESHOLD 0.01
-
   uniform vec2  u_resolution;
   uniform float u_time;
   uniform vec4  u_c;
@@ -205,6 +204,13 @@ export const fragmentShader = `
   uniform int   u_physicsColorType;
   uniform vec4  u_physicsParams;
 
+  // Raymarching parameters
+  uniform float u_maxMarchSteps;
+  uniform float u_maxMarchDistance;
+  uniform float u_hitThreshold;
+  uniform float u_safeStep;
+  uniform float u_crossSectionThreshold;
+
   varying vec2 vUv;
 
   // Quaternion multiplication
@@ -223,8 +229,7 @@ export const fragmentShader = `
       vec4 c = u_c;
       float dr = 1.0;
       float r = 0.0;
-      for (int i = 0; i < 512; i++){
-          if(float(i) >= u_maxIter) break;
+      for (int i = 0; i < int(u_maxIter); i++){
           r = length(z);
           if (r > 4.0) break;
           dr = 2.0 * r * dr;
@@ -237,8 +242,7 @@ export const fragmentShader = `
   float getIterationCount(vec3 pos) {
       vec4 z = vec4(pos, u_slice);
       vec4 c = u_c;
-      for (int i = 0; i < 512; i++){
-          if(float(i) >= u_maxIter) break;
+      for (int i = 0; i < int(u_maxIter); i++){
           float r = length(z);
           if(r > 4.0){
               return float(i);
@@ -252,8 +256,7 @@ export const fragmentShader = `
   float getIterationSmooth(vec3 pos) {
       vec4 z = vec4(pos, u_slice);
       vec4 c = u_c;
-      for (int i=0; i<512; i++){
-          if(float(i) >= u_maxIter) break;
+      for (int i = 0; i < int(u_maxIter); i++){
           float r = length(z);
           if(r>4.0){
               float f = float(i) - log2(log2(r)) + 4.0;
@@ -278,8 +281,8 @@ export const fragmentShader = `
           // Far from surface - use much larger step for performance
           stepFactor = 2.0;
       } else {
-          // Mid-range - more aggressive transition
-          stepFactor = 1.0 + (distance - 0.01) * 1.8; // Linear from 1.0 to ~2.0
+          // Mid-range - stepFactor transitions from 1.0 (at 0.01 distance) up to approx. 1.88 (at 0.5 distance)
+          stepFactor = 1.0 + (distance - 0.01) * 1.8; 
       }
       
       return distance * stepFactor;
@@ -289,18 +292,18 @@ export const fragmentShader = `
   float rayMarchStandard(vec3 ro, vec3 rd) {
       float t = 0.0;
       
-      for (int i = 0; i < MAX_MARCH; i++) {
+      for (int i = 0; i < int(u_maxMarchSteps); i++) {
           vec3 pos = ro + rd * t;
           float d = quaternionJuliaDE(pos);
           
           // Simple hit condition
-          if (d < HIT_THRESHOLD)
+          if (d < u_hitThreshold)
               return t;
           
           // Calculate and apply step
           t += calculateStepSize(d);
           
-          if (t > MAX_DIST)
+          if (t > u_maxMarchDistance)
               break;
       }
       
@@ -311,21 +314,21 @@ export const fragmentShader = `
   float rayMarchClipMode1(vec3 ro, vec3 rd) {
       float t = 0.0;
       
-      for (int i = 0; i < MAX_MARCH; i++) {
+      for (int i = 0; i < int(u_maxMarchSteps); i++) {
           vec3 pos = ro + rd * t;
           float d = quaternionJuliaDE(pos);
           
           // Hit condition with special handling
-          if (d < HIT_THRESHOLD) {
+          if (d < u_hitThreshold) {
               // Mode 1 ignores the first hit and continues
-              t += SAFE_STEP;
+              t += u_safeStep;
               continue;
           }
           
           // Calculate and apply step
           t += calculateStepSize(d);
           
-          if (t > MAX_DIST)
+          if (t > u_maxMarchDistance)
               break;
       }
       
@@ -336,18 +339,18 @@ export const fragmentShader = `
   float rayMarchClipMode2(vec3 ro, vec3 rd) {
       float t = 0.0;
       
-      for (int i = 0; i < MAX_MARCH; i++) {
+      for (int i = 0; i < int(u_maxMarchSteps); i++) {
           vec3 pos = ro + rd * t;
           float d = quaternionJuliaDE(pos);
           
           // Hit condition with special handling
-          if (d < HIT_THRESHOLD) {
+          if (d < u_hitThreshold) {
               // Mode 2 only renders points close to the cross-section distance
               float distToPlane = abs(t - u_clipDistance);
-              if (distToPlane < CROSS_SECTION_THRESHOLD) {
+              if (distToPlane < u_crossSectionThreshold) {
                   return t; // Only render points in cross-section
               } else {
-                  t += SAFE_STEP;
+                  t += u_safeStep;
                   continue;
               }
           }
@@ -355,7 +358,7 @@ export const fragmentShader = `
           // Calculate and apply step
           t += calculateStepSize(d);
           
-          if (t > MAX_DIST)
+          if (t > u_maxMarchDistance)
               break;
       }
       
@@ -366,15 +369,15 @@ export const fragmentShader = `
   float rayMarchClipMode3(vec3 ro, vec3 rd) {
       float t = 0.0;
       
-      for (int i = 0; i < MAX_MARCH; i++) {
+      for (int i = 0; i < int(u_maxMarchSteps); i++) {
           vec3 pos = ro + rd * t;
           float d = quaternionJuliaDE(pos);
           
           // Hit condition with special handling
-          if (d < HIT_THRESHOLD) {
+          if (d < u_hitThreshold) {
               // Mode 3 ignores hits beyond the cross-section distance
               if (t > u_clipDistance) {
-                  t += SAFE_STEP;
+                  t += u_safeStep;
                   continue;
               }
               
@@ -385,7 +388,7 @@ export const fragmentShader = `
           // Calculate and apply step
           t += calculateStepSize(d);
           
-          if (t > MAX_DIST)
+          if (t > u_maxMarchDistance)
               break;
       }
       
@@ -422,13 +425,13 @@ export const fragmentShader = `
   float calcShadow(vec3 ro, vec3 rd) {
       float t = 0.02;
       float res = 1.0;
-      for(int i=0; i<32; i++){
+      for(int i=0; i<32; i++){ // Note: This loop bound seems independent of MAX_MARCH
           vec3 p = ro + rd*t;
           float d = quaternionJuliaDE(p);
-          if(d < HIT_THRESHOLD * 5.0) return 0.0;
+          if(d < u_hitThreshold * 5.0) return 0.0; // Using u_hitThreshold here
           res = min(res, 10.0*d/t);
           t += d;
-          if(t > 20.0) break;
+          if(t > 20.0) break; // Note: This hardcoded distance seems independent of MAX_DIST
       }
       return clamp(res, 0.0, 1.0);
   }
@@ -771,7 +774,7 @@ export const fragmentShader = `
       vec3 rd = normalize(u_camRot * vec3(uv, -u_focalLength));
 
       float t = rayMarch(ro, rd);
-      if(t > MAX_DIST - 0.1) {
+      if(t > u_maxMarchDistance - 0.1) {
           gl_FragColor = vec4(0.0,0.0,0.0,1.0);
           return;
       }

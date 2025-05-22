@@ -90,35 +90,35 @@ function createDynamicColorsFolder() {
     });
     
     dynamicColors.addInput(colorDynamicsSettings, 'saturation', {
-        label: 'Saturation (S)',
+        label: 'Saturation (Shift+S)',
         min: 0.0, max: 2.0, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
     dynamicColors.addInput(colorDynamicsSettings, 'brightness', {
-        label: 'Brightness (B)',
+        label: 'Brightness (Shift+B)',
         min: 0.0, max: 2.0, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
     dynamicColors.addInput(colorDynamicsSettings, 'contrast', {
-        label: 'Contrast (N)',
+        label: 'Contrast (Shift+N)',
         min: 0.0, max: 2.0, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
     dynamicColors.addInput(colorDynamicsSettings, 'phaseShift', {
-        label: 'Phase Shift (P)',
+        label: 'Phase Shift (Shift+P)',
         min: 0.0, max: 6.28, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
     dynamicColors.addInput(colorDynamicsSettings, 'animationSpeed', {
-        label: 'Anim Speed (A)',
+        label: 'Anim Speed (Shift+A)',
         min: 0.05, max: 2.0, step: 0.05
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
@@ -151,7 +151,7 @@ function createOrbitTrapFolder() {
     bindingState.orbitTrapTypeSelector.value = orbitTrapSettings.type;
     
     orbitTrap.addInput(bindingState.orbitTrapTypeSelector, 'value', {
-        label: 'Trap Type (T)',
+        label: 'Trap Type (Shift+T)',
         options: {
             'Circle': 0,
             'Line': 1,
@@ -164,14 +164,14 @@ function createOrbitTrapFolder() {
     });
     
     orbitTrap.addInput(orbitTrapSettings, 'radius', {
-        label: 'Radius (R)',
+        label: 'Radius (Shift+R)',
         min: 0.1, max: 5.0, step: 0.1
     }).on('change', () => {
         updateOrbitTrapUniforms(orbitTrapSettings);
     });
     
     orbitTrap.addInput(orbitTrapSettings, 'intensity', {
-        label: 'Intensity (I)',
+        label: 'Intensity (Shift+I)',
         min: 0.1, max: 5.0, step: 0.1
     }).on('change', () => {
         updateOrbitTrapUniforms(orbitTrapSettings);
@@ -204,7 +204,7 @@ function createPhysicsColorsFolder() {
     bindingState.physicsColorTypeSelector.value = physicsColorSettings.type;
     
     physics.addInput(bindingState.physicsColorTypeSelector, 'value', {
-        label: 'Effect Type (Y)',
+        label: 'Effect Type (Shift+Y)',
         options: {
             'Diffraction': 0,
             'Interference': 1,
@@ -216,28 +216,28 @@ function createPhysicsColorsFolder() {
     });
     
     physics.addInput(physicsColorSettings, 'frequency', {
-        label: 'Frequency (Q)',
+        label: 'Frequency (Shift+Q)',
         min: 0.1, max: 5.0, step: 0.1
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
     physics.addInput(physicsColorSettings, 'waves', {
-        label: 'Waves (W)',
+        label: 'Waves (Shift+W)',
         min: 1.0, max: 20.0, step: 0.5
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
     physics.addInput(physicsColorSettings, 'intensity', {
-        label: 'Intensity (E)',
+        label: 'Intensity (Shift+E)',
         min: 0.1, max: 2.0, step: 0.1
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
     physics.addInput(physicsColorSettings, 'balance', {
-        label: 'Balance (D)',
+        label: 'Balance (Shift+D)',
         min: 0.0, max: 1.0, step: 0.05
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);

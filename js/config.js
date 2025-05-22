@@ -9,7 +9,6 @@ export const CONFIG = {
         INITIAL_RADIUS: 2.0,           // Initial camera distance from scene center
         MAX_DISTANCE: 2.4,             // Maximum allowed distance from center
         DEFAULT_FOCAL_LENGTH: 1.5,     // Default focal length (affects field of view)
-        MOVE_SPEED: 0.005,             // Base speed coefficient (currently unused)
         MAX_VELOCITY: 0.05,            // Maximum allowed forward/backward velocity
         DECELERATION: 0.005,           // Deceleration coefficient (higher = faster stop)
         VELOCITY_SENSITIVITY: 0.000003, // Multiplier for mouse wheel delta to adjust velocity
@@ -70,9 +69,7 @@ export const CONFIG = {
         TOUR_ENDING_DURATION: 3.0,      // Duration to display tour completion message
         PATH: 'tours/',                 // Path to tour files
         FILE_PATTERN: 'tour{NUM}.json', // Tour filename pattern
-        MENU_HIDE_DELAY: 100,           // Delay in ms for hiding menu elements
-        SAFE_STEP: 0.002,               // Safe step size when continuing after a hit
-        CROSS_SECTION_THRESHOLD: 0.01   // Threshold for cross-section rendering
+        MENU_HIDE_DELAY: 100           // Delay in ms for hiding menu elements
     },
     
     // UI selectors and texts
@@ -162,7 +159,9 @@ export const CONFIG = {
         AO_STEP_DISTANCE: 0.02,        // Ambient occlusion step distance
         AO_FACTOR: 0.2,                // Ambient occlusion strength factor
         EPSILON: 0.001,                // Epsilon value for normal calculations and others
-        HIT_THRESHOLD: 0.0001          // Distance threshold for surface hit detection
+        HIT_THRESHOLD: 0.0001,         // Distance threshold for surface hit detection
+        SAFE_STEP: 0.002,               // Safe step size when continuing after a hit (used in raymarching)
+        CROSS_SECTION_THRESHOLD: 0.01   // Threshold for cross-section rendering (used in raymarching)
     },
     
     // Screenshot parameters

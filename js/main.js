@@ -8,10 +8,10 @@
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 import { scene, renderer, handleResize } from './scene.js';
 import { camera, setupInitialCamera, updateTargetAnimation, checkReturnToStart, updateCameraMovement } from './camera.js';
-import { fractalState, updateSlice } from './fractal.js';
+import { fractalState, updateSlice, forceResetClipMode } from './fractal.js';
 import { initInteractions } from './interactions.js';
 import { updateStatsPanel, setPauseVisuals } from './ui.js';
-import { updateTimeUniform } from './shaders.js';
+import { updateTimeUniform, uniforms } from './shaders.js';
 import { initRecorder } from './recorder.js';
 import { updateTourPlayback, isTourPlaying } from './tour.js';
 import { initTweakpane, refreshUI } from './tweakpane-ui.js';
@@ -64,7 +64,6 @@ export function getFps() {
 export function forceStatsUpdateFor(seconds) {
     forceStatsUpdate = true;
     forceStatsUpdateEndTime = performance.now() + (seconds * 1000);
-    console.log(`Forcing stats updates for ${seconds} seconds`);
 }
 
 /**
@@ -88,7 +87,6 @@ function startAnimation() {
     renderingPaused = false;
     clock.start(); // Restart clock to avoid time jump
     setPauseVisuals(false); // Update UI
-    console.log("Animation Resumed");
     animate(); // Restart loop
 }
 
@@ -105,7 +103,6 @@ function stopAnimation() {
     }
     clock.stop(); // Stop clock
     setPauseVisuals(true); // Update UI
-    console.log("Animation Paused");
 }
 
 /**
@@ -155,7 +152,6 @@ function animate() {
             // Check if we should stop forcing updates
             if (performance.now() > forceStatsUpdateEndTime) {
                 forceStatsUpdate = false;
-                console.log("Stopped forcing stats updates");
             } else {
                 // Force call the stats update function directly
                 updateStatsPanel(true); // Pass true to indicate forced update
@@ -183,16 +179,14 @@ function animate() {
  */
 async function validateClipSettings() {
     try {
-        const clipMode = window.uniforms?.u_clipMode?.value;
-        const clipDistance = window.uniforms?.u_clipDistance?.value;
-        const stateModeMatch = window.fractalState?.crossSectionSettings?.clipMode === clipMode;
+        const clipMode = uniforms.u_clipMode.value;
+        const clipDistance = uniforms.u_clipDistance.value;
+        const stateModeMatch = fractalState?.crossSectionSettings?.clipMode === clipMode;
         
         if (!stateModeMatch) {
             console.warn("Cross-section mode mismatch detected, resetting to OFF mode");
             
-            // Use static import to avoid dynamic import issues
-            const fractalModule = await import('./fractal.js');
-            fractalModule.forceResetClipMode();
+            forceResetClipMode();
         }
     } catch (error) {
         console.error("Error validating clip settings:", error);
@@ -214,8 +208,9 @@ async function init() {
         // Initialize Tweakpane UI
         initTweakpane();
         
-        // Validate clip settings after a short delay to ensure uniforms are loaded
-        setTimeout(validateClipSettings, 500);
+        // Validate clip settings after potential microtasks or UI updates from Tweakpane
+        // initialization, but before the next render. This is more reliable than a fixed timeout.
+        requestAnimationFrame(validateClipSettings);
 
         console.log("Starting Animation Loop...");
         animate();                  // Start the main loop

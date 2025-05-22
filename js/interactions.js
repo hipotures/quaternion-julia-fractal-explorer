@@ -33,44 +33,70 @@ import { toggleTweakpaneVisibility } from './tweakpane-ui.js'; // Import Tweakpa
 let isCtrlPressed = false;
 let isMouseWheelPressed = false; // Track if the mouse wheel is being held down
 
-// --- Helper: Simple Distance Estimator for Click Raycasting ---
-// (Adapted from original code, uses current uniforms/state)
-function estimateSimpleDistance(pos) {
-    // Use current slice value from fractalState
-    let z = new THREE.Vector4(pos.x, pos.y, pos.z, fractalState.sliceValue);
-    const c = uniforms.u_c.value; // Use current fractal params from uniforms
-
-    let r = 0.0;
-    const maxIter = CONFIG.RAYMARCHING.SIMPLE_DISTANCE_MAX_ITER; // Fewer iterations for speed
-
-    for (let i = 0; i < maxIter; i++) {
-        r = z.length();
-        if (r > CONFIG.RAYMARCHING.ESCAPE_RADIUS) break;
-
-        // Simplified quaternion multiplication (qmul(z, z))
-        const zx = z.x, zy = z.y, zz = z.z, zw = z.w;
-        const x2 = zx * zx, y2 = zy * zy, z2 = zz * zz, w2 = zw * zw;
-        const xy = zx * zy, xz = zx * zz, xw = zx * zw;
-        const yz = zy * zz, yw = zy * zw, zw_ = zz * zw;
-
-        z.x = x2 - y2 - z2 - w2 + c.x;
-        z.y = 2.0 * xy + c.y; // Simplified - missing cross terms from full qmul
-        z.z = 2.0 * xz + c.z; // Simplified
-        z.w = 2.0 * xw + c.w; // Simplified
-        // Note: The original simple estimate was likely incorrect qmul.
-        // A full qmul is:
-        // z.x = zx*zx - zy*zy - zz*zz - zw*zw + c.x;
-        // z.y = 2.0*zx*zy + 2.0*zz*zw + c.y; // Corrected based on qmul definition
-        // z.z = 2.0*zx*zz - 2.0*zy*zw + c.z; // Corrected
-        // z.w = 2.0*zx*zw + 2.0*zy*zz + c.w; // Corrected
-        // Using the original simplified version for now to match behavior.
-    }
-
-    // Return a small distance if likely inside the set, or a fraction of radius otherwise
-    return r < CONFIG.RAYMARCHING.ESCAPE_RADIUS ? CONFIG.RAYMARCHING.DEFAULT_STEP_SIZE : 
-           Math.abs(CONFIG.RAYMARCHING.SHADOW_FACTOR * Math.log(Math.max(r, CONFIG.RAYMARCHING.MIN_STEP_SIZE)) * r / 1.0); // Simplified DE approximation
+// --- Helper: Quaternion Multiplication for JavaScript ---
+function js_qmul(q1, q2) {
+    return new THREE.Vector4(
+        q1.x * q2.x - q1.y * q2.y - q1.z * q2.z - q1.w * q2.w,
+        q1.x * q2.y + q1.y * q2.x + q1.z * q2.w - q1.w * q2.z,
+        q1.x * q2.z + q1.z * q2.x + q1.w * q2.y - q1.y * q2.w,
+        q1.x * q2.w + q1.w * q2.x + q1.y * q2.z - q1.z * q2.y
+    );
 }
 
+// --- Helper: Accurate Distance Estimator for Click Raycasting ---
+function accurateQuaternionJuliaDE(posVec3, sliceValue, cVec4, maxIterations) {
+    let z = new THREE.Vector4(posVec3.x, posVec3.y, posVec3.z, sliceValue);
+    const c = cVec4; // c is already a THREE.Vector4
+
+    let dr = 1.0;
+    let r = 0.0;
+    const escapeRadius = CONFIG.RAYMARCHING.ESCAPE_RADIUS;
+    // Use MIN_STEP_SIZE from CONFIG.RAYMARCHING, default to 1e-6 if not found for safety
+    const minValForLog = (CONFIG.RAYMARCHING && CONFIG.RAYMARCHING.MIN_STEP_SIZE) ? CONFIG.RAYMARCHING.MIN_STEP_SIZE : 1e-6;
+
+    for (let i = 0; i < maxIterations; i++) {
+        r = z.length();
+        if (r > escapeRadius) {
+            break;
+        }
+        
+        // Update dr: derivative is 2*|z|, so dr_new = dr_old * 2 * |z|
+        // Safeguard dr against becoming zero if r is zero.
+        if (r < minValForLog) { // If r is effectively zero
+            // If r=0, z=0. Then z*z=0. z_new = c.
+            // dr update 2*r*dr would be 0.
+            // To prevent dr from becoming zero and staying zero:
+            // if dr is already 1.0 (first iteration) and r is effectively 0, dr remains 1.0.
+            // This means the first step's derivative magnitude is considered 1.
+            if (i === 0 && Math.abs(dr - 1.0) < minValForLog) {
+                // dr stays 1.0 if r is tiny on first step
+            } else {
+                // On subsequent steps if r is small, dr could diminish rapidly.
+                // Let's keep it from becoming smaller than minValForLog in magnitude.
+                let updated_dr = 2.0 * r * dr;
+                if(Math.abs(updated_dr) < minValForLog) {
+                    dr = (dr > 0 ? minValForLog : -minValForLog);
+                } else {
+                    dr = updated_dr;
+                }
+            }
+        } else {
+            dr = 2.0 * r * dr;
+        }
+
+        z = js_qmul(z, z);
+        z.add(c);
+    }
+
+    if (r > escapeRadius) {
+        if (Math.abs(dr) < minValForLog) {
+            dr = (dr >= 0 ? minValForLog : -minValForLog); // Ensure dr is not too small, preserving sign
+        }
+        return Math.abs(0.5 * Math.log(Math.max(r, minValForLog)) * r / dr);
+    }
+    
+    return 0.0; // Inside the set
+}
 
 // --- Event Handlers ---
 
@@ -281,7 +307,6 @@ function handleSystemKeys(key) {
         // Animation toggles
         case CONFIG.KEYS.TOGGLE_ANIMATION:
             cameraState.animationEnabled = !cameraState.animationEnabled;
-            console.log("Animations:", cameraState.animationEnabled ? "ON" : "OFF");
             break;
         // Removed deceleration toggle (D key) - now controlled only by middle mouse button
             
@@ -418,9 +443,13 @@ function handleMouseClick(event) {
         let dist = 0.0;
         const steps = CONFIG.RAYMARCHING.STEP_COUNT; // Ray march steps
 
+        const currentSlice = fractalState.sliceValue;
+        const currentC = uniforms.u_c.value;
+        const clickMaxIterations = 60; 
+
         for (let i = 0; i < steps; i++) {
             const pos = ro.clone().addScaledVector(rd, dist);
-            const d = estimateSimpleDistance(pos); // Use the helper
+            const d = accurateQuaternionJuliaDE(pos, currentSlice, currentC, clickMaxIterations);
 
             if (d < CONFIG.RAYMARCHING.HIT_THRESHOLD) { // Threshold for hit
                 hitPoint = pos;
@@ -463,7 +492,6 @@ function handleMouseWheel(e) {
 function handleMouseDown(e) {
     if (e.button === 1) { // Middle mouse button (wheel click)
         isMouseWheelPressed = true;
-        console.log("Middle mouse button pressed - constant velocity mode");
         
         // Prevent the default behavior (usually scrolling or potential paste)
         e.preventDefault();
@@ -475,7 +503,6 @@ function handleMouseDown(e) {
 function handleMouseUp(e) {
     if (e.button === 1) { // Middle mouse button (wheel click)
         isMouseWheelPressed = false;
-        console.log("Middle mouse button released - normal acceleration mode");
         
         // Prevent the default behavior
         e.preventDefault();

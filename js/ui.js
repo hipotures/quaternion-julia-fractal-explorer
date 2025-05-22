@@ -142,7 +142,6 @@ export function toggleStats(forcedState = null) {
         // Update preset menu visibility based on new state
         updatePresetMenuVisibility();
         
-        console.log("Stats Panel:", showStats ? "Visible" : "Hidden");
     } catch (error) {
         console.error("Error toggling stats panel:", error);
     }
@@ -161,7 +160,6 @@ export function toggleMenu() {
         // Update preset menu visibility based on new state
         updatePresetMenuVisibility();
         
-        console.log("Menu Panel:", showMenu ? "Visible" : "Hidden");
     } catch (error) {
         console.error("Error toggling menu panel:", error);
     }
@@ -228,7 +226,6 @@ function loadQuaternionPreset(index) {
         cameraState.moveVelocity = 0;
         cameraState.isMovingForward = false;
         
-        console.log(`Loaded Quaternion Preset Q${(index+1).toString().padStart(2, '0')}: (${fractalState.params.x.toFixed(3)}, ${fractalState.params.y.toFixed(3)}, ${fractalState.params.z.toFixed(3)}, ${fractalState.params.w.toFixed(3)})`);
     } catch (error) {
         console.error("Error loading quaternion preset:", error);
     }
@@ -287,7 +284,6 @@ export function toggleTourMenu() {
             // If already recording, just toggle the visibility
             const isVisible = tourMenu.style.display === 'flex';
             tourMenu.style.display = isVisible ? 'none' : 'flex';
-            console.log("Tour menu visibility:", !isVisible);
             return !isVisible;
         }
     } catch (error) {
@@ -335,7 +331,6 @@ export function showPresetMenu(visible) {
         if (presetMenu) {
             presetMenu.style.display = visible ? 'flex' : 'none';
             presetMenu.style.visibility = visible ? 'visible' : 'hidden';
-            console.log("PresetMenu visibility changed:", visible ? "visible" : "hidden");
         }
     } catch (error) {
         console.error("Error changing preset menu visibility:", error);

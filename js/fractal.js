@@ -148,14 +148,6 @@ export const physicsColorSettings = {
     balance: 0.5
 };
 
-// Expose states globally for debugging and compatibility with legacy code
-window.fractalState = fractalState;
-window.qualitySettings = qualitySettings;
-window.colorSettings = colorSettings;
-window.colorDynamicsSettings = colorDynamicsSettings;
-window.orbitTrapSettings = orbitTrapSettings;
-window.physicsColorSettings = physicsColorSettings;
-
 // --- Fractal Parameter Update Functions ---
 
 /**
@@ -177,7 +169,6 @@ export function resetFractalParams() {
  */
 export function toggleSliceAnimation() {
     fractalState.animateSlice = !fractalState.animateSlice;
-    console.log("Slice animation:", fractalState.animateSlice ? "ON" : "OFF");
 }
 
 /**
@@ -187,7 +178,6 @@ export function toggleSliceAnimation() {
 export function changeSliceAmplitude(delta) {
     // Limit to max of 1.0 as the fractal disappears beyond -1/1 range
     fractalState.sliceAmplitude = Math.max(0.1, Math.min(fractalState.sliceAmplitude + delta, 1.0));
-    console.log("Slice amplitude:", fractalState.sliceAmplitude.toFixed(1));
 }
 
 /**
@@ -227,7 +217,6 @@ export function changeIterations(delta) {
         Math.min(qualitySettings.maxIter + delta, CONFIG.FRACTAL.MAX_ITER)
     ); 
     updateQualityUniforms(qualitySettings);
-    console.log("Max Iterations:", qualitySettings.maxIter);
 }
 
 /**
@@ -236,7 +225,6 @@ export function changeIterations(delta) {
 export function toggleShadows() {
     qualitySettings.enableShadows = !qualitySettings.enableShadows;
     updateQualityUniforms(qualitySettings);
-    console.log("Shadows:", qualitySettings.enableShadows ? "ON" : "OFF");
 }
 
 /**
@@ -245,7 +233,6 @@ export function toggleShadows() {
 export function toggleAO() {
     qualitySettings.enableAO = !qualitySettings.enableAO;
     updateQualityUniforms(qualitySettings);
-    console.log("AO:", qualitySettings.enableAO ? "ON" : "OFF");
 }
 
 /**
@@ -254,7 +241,6 @@ export function toggleAO() {
 export function toggleSmoothColor() {
     qualitySettings.enableSmoothColor = !qualitySettings.enableSmoothColor;
     updateQualityUniforms(qualitySettings);
-    console.log("Smooth Color:", qualitySettings.enableSmoothColor ? "ON" : "OFF");
 }
 
 /**
@@ -263,7 +249,6 @@ export function toggleSmoothColor() {
 export function toggleSpecular() {
     qualitySettings.enableSpecular = !qualitySettings.enableSpecular;
     updateQualityUniforms(qualitySettings);
-    console.log("Specular:", qualitySettings.enableSpecular ? "ON" : "OFF");
 }
 
 /**
@@ -273,7 +258,6 @@ export function toggleAdaptiveSteps() {
     qualitySettings.enableAdaptiveSteps = !qualitySettings.enableAdaptiveSteps;
     // Update the adaptive steps uniform directly
     updateAdaptiveStepsUniform(qualitySettings.enableAdaptiveSteps);
-    console.log("Adaptive Ray Marching:", qualitySettings.enableAdaptiveSteps ? "ON" : "OFF");
 }
 
 // --- Cross Section Functions ---
@@ -290,7 +274,7 @@ export function cycleClipMode() {
     
     // Show current mode information
     const modeNames = ["OFF", "METHOD 1", "METHOD 2", "METHOD 3"];
-    console.log("Cross Section Mode:", modeNames[crossSectionSettings.clipMode]);
+    // console.log("Cross Section Mode:", modeNames[crossSectionSettings.clipMode]); // Kept for debugging if needed
 }
 
 /**
@@ -309,7 +293,6 @@ export function forceResetClipMode() {
 export function increaseClipDistance() {
     crossSectionSettings.clipDistance += crossSectionSettings.clipDistanceStep;
     updateClipDistanceUniform(crossSectionSettings.clipDistance);
-    console.log("Clip Distance:", crossSectionSettings.clipDistance.toFixed(2));
 }
 
 /**
@@ -321,7 +304,6 @@ export function decreaseClipDistance() {
         crossSectionSettings.clipDistance - crossSectionSettings.clipDistanceStep
     );
     updateClipDistanceUniform(crossSectionSettings.clipDistance);
-    console.log("Clip Distance:", crossSectionSettings.clipDistance.toFixed(2));
 }
 
 /**
@@ -339,7 +321,6 @@ export function changePalette() {
         paletteIndex: shaderPaletteIndex
     });
     
-    console.log("Palette:", colorSettings.paletteIndex === 0 ? "OFF" : colorSettings.paletteIndex);
 }
 
 // --- Dynamic Color Control Functions ---
@@ -350,7 +331,6 @@ export function changePalette() {
 export function toggleColorAnimation() {
     colorDynamicsSettings.animationEnabled = !colorDynamicsSettings.animationEnabled;
     updateColorDynamicsUniforms(colorDynamicsSettings);
-    console.log("Color Animation:", colorDynamicsSettings.animationEnabled ? "ON" : "OFF");
 }
 
 /**
@@ -361,7 +341,6 @@ export function changeColorSaturation(delta) {
     colorDynamicsSettings.saturation = Math.max(0.0, Math.min(2.0, 
         colorDynamicsSettings.saturation + delta));
     updateColorDynamicsUniforms(colorDynamicsSettings);
-    console.log("Color Saturation:", colorDynamicsSettings.saturation.toFixed(2));
 }
 
 /**
@@ -372,7 +351,6 @@ export function changeColorBrightness(delta) {
     colorDynamicsSettings.brightness = Math.max(0.0, Math.min(2.0, 
         colorDynamicsSettings.brightness + delta));
     updateColorDynamicsUniforms(colorDynamicsSettings);
-    console.log("Color Brightness:", colorDynamicsSettings.brightness.toFixed(2));
 }
 
 /**
@@ -383,7 +361,6 @@ export function changeColorContrast(delta) {
     colorDynamicsSettings.contrast = Math.max(0.0, Math.min(2.0, 
         colorDynamicsSettings.contrast + delta));
     updateColorDynamicsUniforms(colorDynamicsSettings);
-    console.log("Color Contrast:", colorDynamicsSettings.contrast.toFixed(2));
 }
 
 /**
@@ -395,7 +372,6 @@ export function changeColorPhaseShift(delta) {
     if (colorDynamicsSettings.phaseShift < 0) colorDynamicsSettings.phaseShift += Math.PI * 2;
     
     updateColorDynamicsUniforms(colorDynamicsSettings);
-    console.log("Color Phase Shift:", (colorDynamicsSettings.phaseShift / Math.PI).toFixed(2) + "π");
 }
 
 /**
@@ -406,7 +382,6 @@ export function changeColorAnimationSpeed(delta) {
     colorDynamicsSettings.animationSpeed = Math.max(0.05, Math.min(2.0, 
         colorDynamicsSettings.animationSpeed + delta));
     updateColorDynamicsUniforms(colorDynamicsSettings);
-    console.log("Color Animation Speed:", colorDynamicsSettings.animationSpeed.toFixed(2));
 }
 
 // --- Orbit Trap Functions ---
@@ -424,7 +399,6 @@ export function toggleOrbitTrap() {
     }
     
     updateOrbitTrapUniforms(orbitTrapSettings);
-    console.log("Orbit Trap:", orbitTrapSettings.enabled ? "ON" : "OFF");
 }
 
 /**
@@ -436,7 +410,7 @@ export function cycleOrbitTrapType() {
     updateOrbitTrapUniforms(orbitTrapSettings);
     
     const typeNames = ["Circle", "Line", "Point", "Cross"];
-    console.log("Orbit Trap Type:", typeNames[orbitTrapSettings.type]);
+    // console.log("Orbit Trap Type:", typeNames[orbitTrapSettings.type]);  // Kept for debugging
 }
 
 /**
@@ -446,7 +420,6 @@ export function cycleOrbitTrapType() {
 export function changeOrbitTrapRadius(delta) {
     orbitTrapSettings.radius = Math.max(0.1, orbitTrapSettings.radius + delta);
     updateOrbitTrapUniforms(orbitTrapSettings);
-    console.log("Orbit Trap Radius:", orbitTrapSettings.radius.toFixed(2));
 }
 
 /**
@@ -456,7 +429,6 @@ export function changeOrbitTrapRadius(delta) {
 export function changeOrbitTrapIntensity(delta) {
     orbitTrapSettings.intensity = Math.max(0.1, Math.min(5.0, orbitTrapSettings.intensity + delta));
     updateOrbitTrapUniforms(orbitTrapSettings);
-    console.log("Orbit Trap Intensity:", orbitTrapSettings.intensity.toFixed(2));
 }
 
 // --- Physics-Based Color Functions ---
@@ -474,7 +446,6 @@ export function togglePhysicsColor() {
     }
     
     updatePhysicsColorUniforms(physicsColorSettings);
-    console.log("Physics-based Color:", physicsColorSettings.enabled ? "ON" : "OFF");
 }
 
 /**
@@ -486,7 +457,7 @@ export function cyclePhysicsColorType() {
     updatePhysicsColorUniforms(physicsColorSettings);
     
     const typeNames = ["Diffraction", "Interference", "Emission Spectrum"];
-    console.log("Physics Color Type:", typeNames[physicsColorSettings.type]);
+    // console.log("Physics Color Type:", typeNames[physicsColorSettings.type]); // Kept for debugging
 }
 
 /**
@@ -497,7 +468,6 @@ export function changePhysicsFrequency(delta) {
     physicsColorSettings.frequency = Math.max(0.1, Math.min(5.0, 
         physicsColorSettings.frequency + delta));
     updatePhysicsColorUniforms(physicsColorSettings);
-    console.log("Physics Frequency:", physicsColorSettings.frequency.toFixed(2));
 }
 
 /**
@@ -508,7 +478,6 @@ export function changePhysicsWaves(delta) {
     physicsColorSettings.waves = Math.max(1.0, Math.min(20.0, 
         physicsColorSettings.waves + delta));
     updatePhysicsColorUniforms(physicsColorSettings);
-    console.log("Physics Waves:", physicsColorSettings.waves.toFixed(1));
 }
 
 /**
@@ -519,7 +488,6 @@ export function changePhysicsIntensity(delta) {
     physicsColorSettings.intensity = Math.max(0.1, Math.min(2.0, 
         physicsColorSettings.intensity + delta));
     updatePhysicsColorUniforms(physicsColorSettings);
-    console.log("Physics Intensity:", physicsColorSettings.intensity.toFixed(2));
 }
 
 /**
@@ -530,7 +498,6 @@ export function changePhysicsBalance(delta) {
     physicsColorSettings.balance = Math.max(0.0, Math.min(1.0, 
         physicsColorSettings.balance + delta));
     updatePhysicsColorUniforms(physicsColorSettings);
-    console.log("Physics/Palette Balance:", physicsColorSettings.balance.toFixed(2));
 }
 
 // --- Initialize Shader Uniforms ---

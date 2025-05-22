@@ -234,7 +234,6 @@ export function checkReturnToStart() {
 
 // Called when the return-to-start animation finishes
 function finishReturnToStart() {
-    console.log("Finished returning to start.");
     cameraState.isReturningToStart = false;
     // Fully reset camera to initial orbital state after animation
     setupInitialCamera();
