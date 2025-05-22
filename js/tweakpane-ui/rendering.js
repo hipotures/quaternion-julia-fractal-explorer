@@ -63,6 +63,38 @@ export function createRenderingFolder() {
         updateQualityUniforms(qualitySettings);
         updateAdaptiveStepsUniform(qualitySettings.enableAdaptiveSteps);
     });
+
+    // Separator before TAA settings
+    folders.rendering.addSeparator();
+
+    // TAA Toggle
+    // The actual state for TAA is managed within taaResolveMaterial.uniforms.u_enableTAA
+    // We need a proxy object or to import taaUniforms here.
+    // For simplicity, let's assume we can import and modify taaUniforms directly.
+    import('../../js/scene.js').then(sceneModule => {
+        if (sceneModule.taaUniforms && sceneModule.taaUniforms.u_enableTAA) {
+            folders.rendering.addInput(sceneModule.taaUniforms.u_enableTAA, 'value', {
+                label: 'Enable TAA (Temporal Anti-Aliasing)'
+            }).on('change', (ev) => {
+                console.log("TAA Enabled:", ev.value);
+                // No need to call a specific update function, Tweakpane updates the uniform's value directly.
+            });
+
+            // Optional: Add TAA blend factor control
+            folders.rendering.addInput(sceneModule.taaUniforms.u_taaBlendFactor, 'value', {
+                label: 'TAA Blend Factor',
+                min: 0.0,
+                max: 1.0,
+                step: 0.01
+            }).on('change', (ev) => {
+                // console.log("TAA Blend Factor:", ev.value);
+            });
+        } else {
+            console.warn("TAA uniforms not available for UI binding.");
+        }
+    }).catch(error => {
+        console.error("Error importing scene module for TAA UI:", error);
+    });
 }
 
 /**

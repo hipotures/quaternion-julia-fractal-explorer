@@ -13,6 +13,8 @@ import { createColorControlsFolder } from './color.js';
 import { createRenderingFolder } from './rendering.js';
 import { createCameraControlsFolder } from './camera.js';
 import { createPresetsFolder } from './presets-ui.js';
+import { createRecorderFolder } from './recorder-ui.js';
+import { createAudioControlsFolder } from './audio-ui.js'; // Import audio UI
 
 // The main Tweakpane instance
 export let pane = null;
@@ -92,6 +94,8 @@ export function initTweakpane() {
     createRenderingFolder();
     createCameraControlsFolder();
     createPresetsFolder();
+    createRecorderFolder();
+    createAudioControlsFolder(); // Add audio settings folder
     
     // Add button to toggle panel visibility
     addPanelToggleButton();

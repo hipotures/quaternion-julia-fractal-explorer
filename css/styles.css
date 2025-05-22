@@ -72,6 +72,57 @@ canvas {
   pointer-events: auto !important; /* Ensure mouse events are handled */
 }
 
+/* Tweakpane Custom Styling */
+:root {
+  /* General */
+  --tp-base-background-color: #101218; /* Darker background for the pane itself */
+  --tp-base-shadow-color: rgba(0, 0, 0, 0.2);
+  --tp-container-background-color: rgba(20, 22, 28, 0.85); /* Slightly lighter for folder backgrounds */
+  --tp-container-background-color-hv: rgba(30, 32, 38, 0.85);
+  --tp-container-foreground-color: #c0c8d0; /* Light grey text */
+  --tp-groove-color: #080a0f; /* Darker separators */
+
+  /* Labels */
+  --tp-label-foreground-color: #8892a0; /* Slightly muted label text */
+
+  /* Inputs: Sliders, Text, Color pickers etc. */
+  --tp-input-background-color: #080a0f;
+  --tp-input-background-color-hv: #181a20;
+  --tp-input-foreground-color: #dde4eb; /* Bright text for inputs */
+  --tp-input-shadow-color: rgba(0, 0, 0, 0.1);
+
+  /* Buttons */
+  --tp-button-background-color: #2a3f55; /* Blueish accent from preset buttons */
+  --tp-button-background-color-hv: #3a5f85;
+  --tp-button-background-color-active: #1a2f45;
+  --tp-button-foreground-color: #dde4eb;
+
+  /* Monitors (not heavily used in this app, but good to define) */
+  --tp-monitor-background-color: #080a0f;
+  --tp-monitor-foreground-color: #8892a0;
+
+  /* Checkbox specific */
+  --tp-checkbox-background-color: #080a0f;
+  --tp-checkbox-foreground-color: #2a3f55; /* Use accent for the checkmark */
+
+  /* Slider specific */
+  --tp-slider-track-background-color: #080a0f;
+  --tp-slider-thumb-background-color: #2a3f55; /* Accent for slider thumb */
+  --tp-slider-thumb-background-color-hv: #3a5f85;
+
+  /* Folder specific */
+  --tp-folder-background-color: var(--tp-container-background-color); /* Match container */
+  --tp-folder-background-color-hv: var(--tp-container-background-color-hv);
+  --tp-folder-foreground-color: #a0acc0; /* Slightly brighter for folder titles */
+}
+
+/* Apply custom background to the Tweakpane container if not already overridden by JS */
+#tweakpane-container {
+  /* background-color: var(--tp-base-background-color) !important; */ /* JS sets this, ensure consistency if needed */
+  /* border: 1px solid var(--tp-groove-color); */ /* Optional border */
+}
+
+
 /* New styles for stats panel categories */
 #stats .stats-category {
   color: #55aaff;
@@ -306,4 +357,18 @@ canvas {
   content: "PAUSED - GPU INACTIVE (Space to resume)";
   color: #ff6666;
   font-weight: bold;
+}
+
+/* Distraction Free Mode - Hides UI elements */
+body.distraction-free-mode #tweakpane-container,
+body.distraction-free-mode #tweakpane-toggle,
+body.distraction-free-mode #menu,
+body.distraction-free-mode #stats,
+body.distraction-free-mode #preset-menu,
+body.distraction-free-mode #tour-menu,
+body.distraction-free-mode #tour-status,
+body.distraction-free-mode #tutorial-container,
+body.distraction-free-mode #record-button, /* Assuming #record-button exists */
+body.distraction-free-mode .webxr-button /* Standard class for VR/AR buttons from Three.js examples */ {
+  display: none !important;
 }

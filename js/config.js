@@ -145,7 +145,8 @@ export const CONFIG = {
         DECREASE_CLIP_DISTANCE: '[',
         INCREASE_CLIP_DISTANCE: ']',
         DECREASE_SLICE_AMPLITUDE: ',',
-        INCREASE_SLICE_AMPLITUDE: '.'
+        INCREASE_SLICE_AMPLITUDE: '.',
+        TOGGLE_UI_VISIBILITY: 'u' // Key for distraction-free mode
     },
     
     // Rendering and shader parameters

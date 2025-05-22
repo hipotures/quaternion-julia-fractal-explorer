@@ -376,6 +376,12 @@ function handleKeyDown(e) {
     else if (key === 'c') {
         toggleColorAnimation();
     }
+    // Distraction Free Mode
+    else if (key === CONFIG.KEYS.TOGGLE_UI_VISIBILITY) { // Assuming 'u' is defined in CONFIG.KEYS
+        import('./ui.js').then(uiModule => {
+            uiModule.toggleDistractionFreeMode();
+        }).catch(error => console.error("Failed to load ui.js for distraction free mode:", error));
+    }
 }
 
 function handleKeyUp(e) {

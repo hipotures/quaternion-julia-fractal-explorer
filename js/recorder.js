@@ -10,9 +10,20 @@ let recordedChunks = [];
 let isRecording = false;
 let recordingStartTime = 0;
 let recordingIndicator = null;
-let originalCanvasSize = null;
-let originalCameraState = null;
+let originalState = {
+    canvasSize: null,
+    cameraState: null,
+    rendererSize: null,
+    windowSize: null,
+    shaderResolution: null
+};
 let currentQuality = 'NORMAL'; // 'NORMAL', 'HIGH', 'ULTRA'
+export let recorderSettings = { // Export for UI binding
+    resolution: 'current', // 'current', '720p', '1080p', '1440p', '4k'
+    aspectRatio: 'current', // 'current', '16:9', '9:16', '1:1', '4:3', '3:4'
+    currentFPS: CONFIG.RECORDER.FPS, // Store current FPS for recording
+};
+
 
 // --- Initialize Recording UI ---
 export function initRecorder() {
@@ -180,108 +191,119 @@ export function stopRecording() {
 
 // --- Helper to save original state ---
 function saveOriginalState() {
-    // Store original canvas size and position 
     const canvas = renderer.domElement;
-    originalCanvasSize = {
-        width: canvas.width,
-        height: canvas.height,
-        style: {
-            width: canvas.style.width,
-            height: canvas.style.height,
-            position: canvas.style.position,
-            left: canvas.style.left,
-            top: canvas.style.top
-        }
+    originalState.canvasSize = {
+        width: canvas.width, // actual buffer width
+        height: canvas.height, // actual buffer height
+        styleWidth: canvas.style.width,
+        styleHeight: canvas.style.height,
     };
-    
-    // Store current camera state to restore later
-    originalCameraState = {
-        position: camera.position.clone(),
-        quaternion: camera.quaternion.clone(),
-        matrix: camera.matrix.clone(),
-        matrixWorld: camera.matrixWorld.clone(),
-        cameraState: {
-            pitch: cameraState.pitch,
-            yaw: cameraState.yaw,
-            radius: cameraState.radius,
-            focalLength: cameraState.focalLength,
-            rotation: cameraState.rotation ? cameraState.rotation.clone() : null,
-            target: cameraState.target ? cameraState.target.clone() : null,
-            center: cameraState.center ? cameraState.center.clone() : null,
-            position: cameraState.position ? cameraState.position.clone() : null,
-        }
+    originalState.cameraState = {
+        aspect: camera.aspect,
+        fov: camera.fov, // Assuming PerspectiveCamera, might need adjustment if Orthographic
+        focalLength: cameraState.focalLength, // if your camera logic uses this instead of fov directly
     };
+    originalState.rendererSize = {
+        width: renderer.domElement.width,
+        height: renderer.domElement.height,
+    };
+    originalState.windowSize = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+    };
+    // Save current shader resolution uniform
+    const { uniforms } = await import('./shaders.js'); // Dynamic import for uniforms
+    if (uniforms && uniforms.u_resolution) {
+        originalState.shaderResolution = {
+            x: uniforms.u_resolution.value.x,
+            y: uniforms.u_resolution.value.y
+        };
+    }
+    console.log("Original state saved:", JSON.parse(JSON.stringify(originalState)));
 }
 
 // --- Helper to restore original state ---
-function restoreOriginalState() {
+async function restoreOriginalState() {
     try {
-        // Restore canvas size and style
-        if (originalCanvasSize) {
-            const canvas = renderer.domElement;
-            
-            // Restore size
-            renderer.setSize(originalCanvasSize.width, originalCanvasSize.height, false);
-            
-            // Restore style properties
-            if (canvas.style.width !== originalCanvasSize.style.width) {
-                canvas.style.width = originalCanvasSize.style.width;
-            }
-            if (canvas.style.height !== originalCanvasSize.style.height) {
-                canvas.style.height = originalCanvasSize.style.height;
-            }
-            if (canvas.style.position !== originalCanvasSize.style.position) {
-                canvas.style.position = originalCanvasSize.style.position;
-            }
-            if (canvas.style.left !== originalCanvasSize.style.left) {
-                canvas.style.left = originalCanvasSize.style.left;
-            }
-            if (canvas.style.top !== originalCanvasSize.style.top) {
-                canvas.style.top = originalCanvasSize.style.top;
-            }
-            
-            originalCanvasSize = null;
+        console.log("Attempting to restore original state:", JSON.parse(JSON.stringify(originalState)));
+        if (originalState.rendererSize) {
+            // Use window size for renderer to fill screen, or original canvas buffer size if preferred
+            renderer.setSize(originalState.windowSize.width, originalState.windowSize.height, false);
+        }
+        if (originalState.cameraState) {
+            camera.aspect = originalState.cameraState.aspect;
+            // if (camera.isPerspectiveCamera) camera.fov = originalState.cameraState.fov; // Restore fov if it was changed
+            cameraState.focalLength = originalState.cameraState.focalLength; // Restore focal length
+            camera.updateProjectionMatrix();
+        }
+        if (originalState.shaderResolution) {
+            const { updateResolutionUniform } = await import('./shaders.js');
+            updateResolutionUniform(originalState.shaderResolution.x, originalState.shaderResolution.y);
         }
         
-        // Restore camera state
-        if (originalCameraState) {
-            // Force camera back to original position and rotation
-            camera.position.copy(originalCameraState.position);
-            camera.quaternion.copy(originalCameraState.quaternion);
-            camera.matrix.copy(originalCameraState.matrix);
-            camera.matrixWorld.copy(originalCameraState.matrixWorld);
-            
-            // Update camera (needed to apply changes)
-            camera.updateMatrix();
-            camera.updateMatrixWorld();
-            
-            // Restore camera state object properties
-            if (originalCameraState.cameraState) {
-                const savedState = originalCameraState.cameraState;
-                cameraState.pitch = savedState.pitch;
-                cameraState.yaw = savedState.yaw;
-                cameraState.radius = savedState.radius;
-                cameraState.focalLength = savedState.focalLength;
-                
-                if (savedState.rotation && cameraState.rotation) {
-                    cameraState.rotation.copy(savedState.rotation);
-                }
-                if (savedState.target && cameraState.target) {
-                    cameraState.target.copy(savedState.target);
-                }
-                if (savedState.center && cameraState.center) {
-                    cameraState.center.copy(savedState.center);
-                }
-                if (savedState.position && cameraState.position) {
-                    cameraState.position.copy(savedState.position);
-                }
-            }
-            
-            originalCameraState = null;
+        // Restore canvas style if it was changed (important for layout)
+        if (originalState.canvasSize && originalState.canvasSize.styleWidth) {
+             renderer.domElement.style.width = originalState.canvasSize.styleWidth;
+             renderer.domElement.style.height = originalState.canvasSize.styleHeight;
         }
+
+        // Clear the stored state
+        originalState = { canvasSize: null, cameraState: null, rendererSize: null, windowSize: null, shaderResolution: null };
+        console.log("Original state restored.");
     } catch (error) {
         console.error("Error restoring original state:", error);
     }
+}
+
+// --- Calculate target recording dimensions ---
+function getTargetDimensions() {
+    let targetWidth = originalState.canvasSize?.width || window.innerWidth;
+    let targetHeight = originalState.canvasSize?.height || window.innerHeight;
+    let currentAspect = targetWidth / targetHeight;
+
+    // Resolution
+    switch (recorderSettings.resolution) {
+        case '720p':  targetWidth = 1280; targetHeight = 720; break;
+        case '1080p': targetWidth = 1920; targetHeight = 1080; break;
+        case '1440p': targetWidth = 2560; targetHeight = 1440; break;
+        case '4k':    targetWidth = 3840; targetHeight = 2160; break;
+        case 'current': // Use current canvas buffer size as base, then apply aspect ratio
+            targetWidth = originalState.rendererSize.width;
+            targetHeight = originalState.rendererSize.height;
+            break;
+    }
+    
+    // Aspect Ratio - this will override height if resolution is also set (width from resolution, height from aspect)
+    // Or, if resolution is 'current', it will adjust based on current canvas dimensions.
+    let newAspect = currentAspect;
+    switch (recorderSettings.aspectRatio) {
+        case '16:9':  newAspect = 16/9; break;
+        case '9:16':  newAspect = 9/16; break;
+        case '1:1':   newAspect = 1/1;  break;
+        case '4:3':   newAspect = 4/3;  break;
+        case '3:4':   newAspect = 3/4;  break;
+        case 'current': newAspect = currentAspect; break; // Keep current aspect
+    }
+
+    if (recorderSettings.resolution !== 'current' && recorderSettings.aspectRatio !== 'current') {
+        // If both resolution (which implies an aspect) and a different aspect ratio are chosen,
+        // we prioritize the width from the resolution and calculate height based on the new aspect ratio.
+        targetHeight = Math.round(targetWidth / newAspect);
+    } else if (recorderSettings.resolution === 'current' && recorderSettings.aspectRatio !== 'current') {
+        // If using current resolution but changing aspect ratio, adjust one dimension.
+        // Let's adjust height based on current width and new aspect ratio.
+        targetHeight = Math.round(targetWidth / newAspect);
+    } else if (recorderSettings.resolution !== 'current' && recorderSettings.aspectRatio === 'current') {
+        // If specific resolution is chosen, its inherent aspect ratio is used.
+        // targetWidth and targetHeight are already set.
+    }
+    // If both are 'current', original dimensions are used.
+
+    // Ensure dimensions are even for some codecs
+    targetWidth = targetWidth % 2 === 0 ? targetWidth : targetWidth + 1;
+    targetHeight = targetHeight % 2 === 0 ? targetHeight : targetHeight + 1;
+
+    return { width: targetWidth, height: targetHeight };
 }
 
 // --- Toggle Recording State ---

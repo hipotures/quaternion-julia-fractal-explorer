@@ -437,7 +437,7 @@ if (statsElement) {
  * Initializes tour preset buttons based on available tour files
  * Loads tour data from JSON files and creates buttons for each tour
  */
-async function initTourPresetButtons() {
+export async function initTourPresetButtons() {
     try {
         if (!tourPresetsElement) return;
         
@@ -544,3 +544,25 @@ updatePresetMenuVisibility();
 initTourButtons();
 initTourPresetButtons().catch(error => console.error("Tour preset initialization failed:", error));
 makeTourMenuDraggable();
+
+// --- Distraction Free Mode ---
+let isDistractionFreeModeActive = false;
+
+/**
+ * Toggles the distraction-free mode, hiding or showing all UI elements.
+ */
+export function toggleDistractionFreeMode() {
+    isDistractionFreeModeActive = !isDistractionFreeModeActive;
+    if (isDistractionFreeModeActive) {
+        document.body.classList.add('distraction-free-mode');
+        console.log("Distraction-Free Mode: ON");
+    } else {
+        document.body.classList.remove('distraction-free-mode');
+        console.log("Distraction-Free Mode: OFF");
+    }
+    // It's important that individual UI components correctly show/hide themselves
+    // based on their own state when distraction-free mode is turned OFF.
+    // For example, if Tweakpane was hidden by its own toggle, it should remain hidden.
+    // The `!important` in CSS for distraction-free-mode handles overriding,
+    // and removing the class should restore elements to their previous state managed by their specific logic.
+}

@@ -299,3 +299,16 @@ export function handleScreenshotKeys(key) {
         takeScreenshot(false);
     }
 }
+
+/**
+ * Opens a Twitter intent URL to share a predefined message.
+ * Encourages the user to manually upload their last screenshot.
+ */
+export function shareCurrentViewOnX() {
+    const text = "Check out this amazing fractal I generated with Quaternion Julia Fractal Explorer! #QuaternionFractal #JuliaSet #ProceduralArt\n\n(Don't forget to attach your screenshot!)";
+    const hashtags = ""; // Hashtags are already in the text for this approach
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+
+    window.open(url, '_blank');
+    console.log("Opened Twitter share intent URL.");
+}

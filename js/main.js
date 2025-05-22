@@ -149,6 +149,14 @@ function animate() {
             updateTourPlayback(delta);  // Update tour animation
         }
 
+        // Update ambient audio parameters
+        // Dynamically import and call to avoid issues if module not fully loaded yet or if audio is disabled
+        import('./ambientAudio.js').then(audioModule => {
+            if (audioModule.getAudioSettings && audioModule.getAudioSettings().enabled) {
+                audioModule.updateAudioParams();
+            }
+        }).catch(e => console.error("Error updating audio params:", e));
+
         // Update UI
         // Check if we need to update stats even when hidden
         if (forceStatsUpdate) {
@@ -168,8 +176,83 @@ function animate() {
         // Update Tweakpane UI to keep it in sync with application state
         refreshUI();
 
-        // Render scene
-        renderer.render(scene, camera);
+        // --- TAA Rendering Steps ---
+        const { mainRenderTarget, historyRenderTarget, taaScene, taaUniforms, prevViewProjectionMatrix, fractalMaterial } = await import('./scene.js');
+        const { uniforms: fractalUniforms } = await import('./shaders.js');
+
+        // 0. Update TAA-specific uniforms
+        const { applyProjectionMatrixJitter, restoreOriginalProjectionMatrix } = await import('./camera.js');
+        
+        taaUniforms.u_cameraProjectionMatrixInverse.value.copy(camera.projectionMatrixInverse);
+        taaUniforms.u_cameraViewMatrixInverse.value.copy(camera.matrixWorld); 
+        taaUniforms.u_prevViewProjectionMatrix.value.copy(prevViewProjectionMatrix);
+
+        // Store UNjittered view-projection matrix for next frame's reprojection
+        // This should happen BEFORE jittering is applied for the current frame's render.
+        // Note: camera.projectionMatrix is updated by applyProjectionMatrixJitter, so calculate this first.
+        const unjitteredProjectionMatrix = camera.projectionMatrix.clone(); // Assuming it's not jittered yet or restored
+        // If restoreOriginalProjectionMatrix was called last frame, camera.projectionMatrix is clean.
+        
+        // Calculate prevViewProjectionMatrix based on the clean state from the END of the previous frame.
+        // So, this calculation should actually be at the end of the TAA steps.
+        // For now, prevViewProjectionMatrix is updated at the end.
+
+        if (taaUniforms.u_enableTAA.value) {
+            const haltonX = getHalton(frameCount + 1, 2); // frameCount starts at 0, Halton needs index >= 1
+            const haltonY = getHalton(frameCount + 1, 3);
+            // Scale jitter to be in range of roughly [-0.5, 0.5] pixels / screen dimension
+            const jitterX = (haltonX * 2.0 - 1.0) / window.innerWidth;
+            const jitterY = (haltonY * 2.0 - 1.0) / window.innerHeight;
+            
+            applyProjectionMatrixJitter(jitterX, jitterY);
+            // The u_jitterOffset in fractal shader is kept for flexibility, but primary jitter is via matrix.
+            // fractalUniforms.u_jitterOffset.value.set(jitterX * window.innerWidth, jitterY * window.innerHeight);
+            fractalUniforms.u_jitterOffset.value.set(0.0, 0.0); // Using matrix jitter primarily
+        } else {
+            restoreOriginalProjectionMatrix(); // Ensure original matrix is used if TAA is off
+            fractalUniforms.u_jitterOffset.value.set(0.0, 0.0);
+        }
+
+        // Update camera matrices after potential jittering
+        camera.updateMatrixWorld(); // Update camera world matrix
+        camera.updateProjectionMatrix(); // Recalculate projection matrix if needed (e.g. aspect change, or if jitter modified it)
+                                       // This also updates projectionMatrixInverse
+
+        // 1. Render fractal scene to mainRenderTarget
+        renderer.setRenderTarget(mainRenderTarget);
+        renderer.clear();
+        renderer.render(scene, camera); // Renders with jittered projection matrix if TAA enabled
+
+        // Restore original projection matrix immediately after rendering the main scene
+        // so that UI elements or other passes are not affected by jitter.
+        if (taaUniforms.u_enableTAA.value) {
+            restoreOriginalProjectionMatrix();
+            camera.updateProjectionMatrix(); // Ensure inverse is also updated back
+        }
+
+        // 2. Render TAA resolve pass to screen (or another buffer if more post-processing)
+        taaUniforms.u_currentFrameTexture.value = mainRenderTarget.texture;
+        // Update other TAA uniforms that might change per frame (e.g. blend factor, though it's static now)
+        taaUniforms.u_cameraProjectionMatrixInverse.value.copy(camera.projectionMatrixInverse); // Use non-jittered for reprojection
+        taaUniforms.u_cameraViewMatrixInverse.value.copy(camera.matrixWorld);
+        
+        renderer.setRenderTarget(null); // Render to screen
+        renderer.clear();
+        renderer.render(taaScene, camera); 
+
+        // 3. Copy mainRenderTarget.texture to historyRenderTarget.texture for next frame
+        // Using the utility copy scene/material from scene.js
+        const { copyScene, copyMaterial, historyRenderTarget: destHistoryRT, mainRenderTarget: srcMainRT } = await import('./scene.js');
+        copyMaterial.uniforms.u_sourceTexture.value = srcMainRT.texture;
+        renderer.setRenderTarget(destHistoryRT);
+        renderer.clear();
+        renderer.render(copyScene, camera); // Render the quad with mainRT texture to historyRT
+        
+        // Update prevViewProjectionMatrix for the next frame using the UNjittered camera state
+        // Ensure camera.projectionMatrix is the UNjittered one here
+        prevViewProjectionMatrix.multiplyMatrices(unjitteredProjectionMatrix, camera.matrixWorldInverse);
+
+
     } catch (error) {
         console.error("Error in animation loop:", error);
         // Continue animation despite error to prevent freezing

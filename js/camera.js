@@ -56,6 +56,10 @@ export const cameraState = {
 window.cameraState = cameraState;
 
 // --- Initialization ---
+// Store the original projection matrix for restoring after jittering
+let originalProjectionMatrix = new THREE.Matrix4();
+let isJittering = false;
+
 export function setupInitialCamera() {
     cameraState.position.set(0, 0, cameraState.radius);
     cameraState.center.set(0, 0, 0);
@@ -68,7 +72,44 @@ export function setupInitialCamera() {
     camera.lookAt(cameraState.center);
     cameraState.rotation.copy(camera.rotation);
 
+    // Initialize projection matrix for the camera object itself
+    // This is a simplified setup; in a real app, this would be part of window resize or init.
+    // Assuming a perspective camera. The actual projection matrix is implicitly created by Three.js
+    // when rendering if not set. However, TAA needs access to it.
+    // We don't explicitly set camera.projectionMatrix here as Three.js handles it.
+    // We will copy it when jittering.
+
     updateCameraState(); // Update uniforms
+}
+
+
+/**
+ * Applies a sub-pixel jitter to the camera's projection matrix.
+ * @param {number} jitterX - The horizontal jitter amount (scaled by screen width).
+ * @param {number} jitterY - The vertical jitter amount (scaled by screen height).
+ */
+export function applyProjectionMatrixJitter(jitterX, jitterY) {
+    if (!isJittering) {
+        // Ensure camera.projectionMatrix is up to date before copying
+        camera.updateProjectionMatrix(); 
+        originalProjectionMatrix.copy(camera.projectionMatrix);
+        isJittering = true;
+    }
+    // Create a temporary jittered matrix to avoid repeatedly modifying the original copy
+    let jitteredMatrix = originalProjectionMatrix.clone();
+    jitteredMatrix.elements[8] += jitterX; 
+    jitteredMatrix.elements[9] += jitterY; 
+    camera.projectionMatrix.copy(jitteredMatrix);
+}
+
+/**
+ * Restores the original projection matrix if jitter was applied.
+ */
+export function restoreOriginalProjectionMatrix() {
+    if (isJittering) {
+        camera.projectionMatrix.copy(originalProjectionMatrix);
+        isJittering = false;
+    }
 }
 
 // --- Update Functions ---

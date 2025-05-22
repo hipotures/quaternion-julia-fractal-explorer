@@ -11,6 +11,7 @@ export function getRotationMatrix(euler) {
 
 // Uniforms - Central management
 export const uniforms = {
+  // Standard uniforms
   u_time:             { value: 0.0 },
   u_resolution:       { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
   u_c:                { value: new THREE.Vector4(-0.2, 0.6, 0.2, 0.2) }, // Initial fractal params
@@ -20,33 +21,39 @@ export const uniforms = {
   u_colorEnabled:     { value: false }, // Initial value
   u_focalLength:      { value: 1.5 },   // Initial value
 
+  // Quality uniforms
   u_maxIter:          { value: 100 },     // Initial value
-  u_enableShadows:    { value: false },   // Initial value
-  u_enableAO:         { value: false },   // Initial value
-  u_enableSmoothColor:{ value: false },   // Initial value
-  u_enableSpecular:   { value: false },   // Initial value
-  u_paletteIndex:     { value: 0 },       // Initial value
-  u_adaptiveSteps:    { value: false },   // Initial value for adaptive ray marching
-  u_clipMode:         { value: 0 },       // Cross section mode (0: off, 1: method 1, 2: method 2)
-  u_clipDistance:     { value: 3.5 },     // Distance of clipping plane from camera
+  u_enableShadows:    { value: false },
+  u_enableAO:         { value: false },
+  u_enableSmoothColor:{ value: false },
+  u_enableSpecular:   { value: false },
+  u_paletteIndex:     { value: 0 },
+  u_adaptiveSteps:    { value: false },
+  u_clipMode:         { value: 0 },
+  u_clipDistance:     { value: 3.5 },
   
   // Dynamic color effects
-  u_colorSaturation:  { value: 1.0 },     // Color saturation adjustment (0.0-2.0)
-  u_colorBrightness:  { value: 1.0 },     // Brightness adjustment (0.0-2.0)
-  u_colorContrast:    { value: 1.0 },     // Contrast adjustment (0.0-2.0)
-  u_colorPhaseShift:  { value: 0.0 },     // Color phase shift (0.0-6.28)
-  u_colorAnimEnabled: { value: false },   // Enable automatic color animation
-  u_colorAnimSpeed:   { value: 0.5 },     // Color animation speed
+  u_colorSaturation:  { value: 1.0 },
+  u_colorBrightness:  { value: 1.0 },
+  u_colorContrast:    { value: 1.0 },
+  u_colorPhaseShift:  { value: 0.0 },
+  u_colorAnimEnabled: { value: false },
+  u_colorAnimSpeed:   { value: 0.5 },
   
   // Orbit trap settings
-  u_orbitTrapEnabled: { value: false },   // Enable orbit trap coloring
-  u_orbitTrapType:    { value: 0 },       // Trap type (0: circle, 1: line, 2: point, 3: cross)
-  u_orbitTrapParams:  { value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) }, // Trap parameters
+  u_orbitTrapEnabled: { value: false },
+  u_orbitTrapType:    { value: 0 },
+  u_orbitTrapParams:  { value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
   
   // Physics-based coloring
-  u_physicsBasedColor:{ value: false },   // Enable physics-based coloring
-  u_physicsColorType: { value: 0 },       // Type (0: diffraction, 1: interference, 2: spectrum)
-  u_physicsParams:    { value: new THREE.Vector4(1.0, 5.0, 1.0, 0.5) } // Physics parameters
+  u_physicsBasedColor:{ value: false },
+  u_physicsColorType: { value: 0 },
+  u_physicsParams:    { value: new THREE.Vector4(1.0, 5.0, 1.0, 0.5) },
+
+  // TAA Uniforms
+  u_prevCamPos:       { value: new THREE.Vector3() }, // Previous camera position
+  u_prevCamRot:       { value: new THREE.Matrix3() }, // Previous camera rotation matrix
+  u_jitterOffset:     { value: new THREE.Vector2(0.0, 0.0) } // Jitter offset for TAA
 };
 
 // Expose uniforms globally for potential debugging or compatibility needs
@@ -205,7 +212,14 @@ export const fragmentShader = `
   uniform int   u_physicsColorType;
   uniform vec4  u_physicsParams;
 
+  // TAA specific uniforms for fractal shader
+  uniform vec3 u_prevCamPos;
+  uniform mat3 u_prevCamRot;
+  uniform vec2 u_jitterOffset; // Applied in main() to uv for jittering
+
   varying vec2 vUv;
+  // Varying for velocity calculation - world space position of the fragment
+  varying vec4 v_worldPos; 
 
   // Quaternion multiplication
   vec4 qmul(vec4 a, vec4 b) {
@@ -565,6 +579,47 @@ export const fragmentShader = `
     );
   }
 
+  // Palette 11: Lava Flow - Deep reds and oranges with a touch of yellow
+  vec3 palette11(float t) {
+    return vec3(
+      0.7 + 0.3 * sin(t * 3.14 + 0.5), // Red: strong, pulsating
+      0.3 + 0.2 * sin(t * 6.28),     // Green: mid-range, faster pulse
+      0.1 + 0.1 * pow(t, 2.0)        // Blue: low, increasing with t
+    );
+  }
+
+  // Palette 12: Forest Canopy - Varying greens and browns
+  vec3 palette12(float t) {
+    return vec3(
+      0.1 + 0.2 * sin(t * 6.28 + 1.0), // Red: low, for brown tones
+      0.4 + 0.3 * sin(t * 3.14),     // Green: dominant, slower pulse
+      0.1 + 0.1 * sin(t * 6.28)      // Blue: low, subtle variation
+    );
+  }
+
+  // Palette 13: Neon Nights - Bright, contrasting neon colors
+  vec3 palette13(float t) {
+    return vec3(
+      0.5 + 0.5 * sin(t * 6.28 + 4.19), // Red: (magenta/pink tones)
+      0.5 + 0.5 * sin(t * 6.28 + 2.09), // Green: (cyan/blue tones)
+      0.5 + 0.5 * sin(t * 6.28)         // Blue: (yellow/green tones)
+    );
+  }
+
+  // Palette 14: Grayscale Depth - Smooth grayscale gradient
+  vec3 palette14(float t) {
+    return vec3(t, t, t); // Simple grayscale
+  }
+
+  // Palette 15: Cosmic Dust - Deep blues and purples with hints of pink
+  vec3 palette15(float t) {
+    return vec3(
+      0.3 + 0.3 * sin(t * 3.14 + 4.0), // Red: (pinkish)
+      0.1 + 0.2 * sin(t * 6.28),     // Green: low
+      0.6 + 0.4 * sin(t * 3.14)      // Blue: dominant (purple/blue)
+    );
+  }
+
   // Main palette selection function - uses switch statement for clarity
   vec3 getPalette(float t, int idx) {
     switch(idx) {
@@ -577,7 +632,12 @@ export const fragmentShader = `
       case 6: return palette7(t);  // Cyan-magenta
       case 7: return palette8(t);  // Desert
       case 8: return palette9(t);  // Underwater
-      default: return palette10(t); // Metallic
+      case 9: return palette10(t); // Metallic
+      case 10: return palette11(t); // Lava Flow
+      case 11: return palette12(t); // Forest Canopy
+      case 12: return palette13(t); // Neon Nights
+      case 13: return palette14(t); // Grayscale Depth
+      default: return palette15(t); // Cosmic Dust
     }
   }
 
@@ -764,19 +824,31 @@ export const fragmentShader = `
   }
 
   void main(){
-      vec2 uv = (gl_FragCoord.xy / u_resolution.xy) * 2.0 - 1.0;
+      // Apply jitter offset to UV for TAA sampling pattern
+      // The main scene quad UVs are already -1 to 1, so jitter needs to be scaled by resolution
+      // However, gl_FragCoord is probably better for jittering if we want subpixel offsets
+      // For now, let's assume u_jitterOffset is small and added to the already [-1,1] uv space
+      vec2 uv = ( (gl_FragCoord.xy + u_jitterOffset) / u_resolution.xy) * 2.0 - 1.0;
       uv.x *= u_resolution.x / u_resolution.y;
-
+      
       vec3 ro = u_camPos;
       vec3 rd = normalize(u_camRot * vec3(uv, -u_focalLength));
 
       float t = rayMarch(ro, rd);
+
+      // Output for velocity calculation: screen position of this fragment
+      // This needs to be calculated based on the final world position 'pos'
+      // For now, v_worldPos will be calculated and passed, used later.
+      // We will compute velocity in the TAA resolve shader for now.
+
       if(t > MAX_DIST - 0.1) {
-          gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+          gl_FragColor = vec4(0.0,0.0,0.0,1.0); // Default color
+          // v_worldPos = vec4(ro + rd * MAX_DIST, 0.0); // Far point, alpha=0 means no hit for velocity
           return;
       }
       vec3 pos = ro + rd * t;
       vec3 normal = getNormal(pos);
+      // v_worldPos = vec4(pos, 1.0); // alpha=1 means hit, pass world position
 
       // Simple light
       vec3 lightPos = vec3(10.0, 10.0, 10.0);
@@ -841,7 +913,16 @@ export const fragmentShader = `
 
       // AO (partially)
       col *= aoVal;
-
-      gl_FragColor = vec4(col, 1.0);
+      
+      // Store world position of hit point for velocity calculation in TAA resolve pass.
+      // We can use the alpha channel of gl_FragColor if we are not using it for transparency.
+      // Or, use Multiple Render Targets (MRT) if alpha is needed for color.
+      // For now, let's assume alpha is free. Velocity calculation will be done in resolve pass.
+      // To actually pass data, we'd need MRT or encode into alpha.
+      // For now, the main shader just renders color. Velocity will be derived from depth + matrices.
+      gl_FragColor = vec4(col, 1.0); 
+      // If we were to output worldPos for velocity calculation in THIS pass:
+      // gl_FragData[0] = vec4(col, 1.0); // Color to main render target
+      // gl_FragData[1] = vec4(pos, 1.0); // World position to velocity target (example)
   }
 `;

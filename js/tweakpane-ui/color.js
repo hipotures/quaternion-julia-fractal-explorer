@@ -49,7 +49,7 @@ function createColorPaletteSelector() {
     bindingState.paletteSelector.value = colorSettings.paletteIndex;
     
     folders.color.addInput(bindingState.paletteSelector, 'value', {
-        label: 'Palette (6)',
+        label: 'Palette (16)', // Corrected: 15 palettes + OFF
         options: {
             'OFF': 0,
             'Rainbow': 1,
@@ -61,7 +61,12 @@ function createColorPaletteSelector() {
             'Cyan-magenta': 7,
             'Desert': 8,
             'Underwater': 9,
-            'Metallic': 10
+            'Metallic': 10,
+            'Lava Flow': 11,
+            'Forest Canopy': 12,
+            'Neon Nights': 13,
+            'Grayscale Depth': 14,
+            'Cosmic Dust': 15
         }
     }).on('change', (ev) => {
         colorSettings.paletteIndex = ev.value;
