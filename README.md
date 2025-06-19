@@ -27,9 +27,15 @@ An interactive 3D explorer for quaternion Julia fractals, allowing real-time nav
 
 ## Controls Guide
 
-The application features two interface panels:
-- Left panel (toggle with 'M' key): Shows all available controls
-- Right panel (toggle with 'P' key): Displays current parameter values and system performance
+The application features a modern 3-panel interface system:
+- **Main Controls Panel (Left)**: Complete fractal, rendering, and camera controls (toggle with 'G' key)
+- **Parameters Monitor Panel (Right)**: Real-time system monitoring with performance graphs and parameter displays
+- **Presets & Tours Panel (Top Center)**: Dropdown menus for quaternion presets (Q01-Q13), tour presets (T01-T04), and tour recording controls (collapsed by default)
+
+### Legacy UI Verification
+- Legacy panels available for comparison: 'M' (old controls), 'P' (old stats)
+- All functionality has been moved to the modern Tweakpane interface
+- Legacy panels are hidden by default for cleaner experience
 
 ### Navigation Controls
 | Control | Action | Stats Panel Value |
@@ -66,9 +72,9 @@ The application features two interface panels:
 ### Interface & Recording
 | Control | Action | Stats Panel Value |
 |---------|--------|-------------------|
-| M | Show/hide controls menu | - |
-| P | Show/hide stats panel | - |
-| G | Show/hide advanced controls panel | - |
+| M | Show/hide legacy controls menu (verification) | - |
+| P | Show/hide legacy stats panel (verification) | - |
+| G | Toggle main Tweakpane controls panel | - |
 | S | Take a screenshot of the fractal | - |
 | V | Start/stop video recording | "REC" indicator when active |
 | Q | Change recording quality | "Rec quality" |
@@ -226,18 +232,46 @@ Advanced coloring that simulates optical phenomena:
 - Advanced effects work best with smooth coloring enabled (key '5')
 - Use the advanced controls panel (G key) for precise numeric adjustments
 
+## Modern UI Features
+
+The application has been completely redesigned with a professional 3-panel interface:
+
+### 3-Panel Layout System
+- **Main Controls (Left)**: All fractal parameters, rendering settings, and camera controls
+- **Parameters Monitor (Right)**: Real-time system monitoring with performance graphs
+- **Presets & Tours (Top Center)**: Quick access to presets and tour functionality
+
+### Dropdown Context Menus
+- **Quaternion Presets**: Click "▼ Select Quaternion Preset" to choose from Q01-Q13 configurations
+- **Tour Presets**: Click "▼ Select Tour" to choose from T01-T04 pre-recorded tours
+- **Full-Width Design**: All controls efficiently use the complete panel width
+- **Smooth Navigation**: Menus reset automatically after selection
+
+### Enhanced User Experience
+- **Scroll Isolation**: Panel scrolling doesn't interfere with fractal navigation
+- **Legacy Verification**: Old UI panels available for comparison (M/P keys)
+- **Responsive Design**: Interface adapts to different screen sizes
+- **Real-Time Monitoring**: Live FPS graphs and parameter tracking
+
+### Performance Features
+- **Smart Event Handling**: Scroll events are blocked on UI panels to prevent conflicts
+- **Efficient State Management**: UI changes sync instantly across all panels
+- **Memory Optimization**: Clean resource management and efficient rendering
+
 ## Tour System
 
 The application includes a comprehensive tour recording and playback system:
 
 1. **Recording Tours**:
-   - Press 'T' to open the tour recording menu
-   - Navigate to interesting locations and click "Register Point" to add waypoints
-   - Click "Finish Tour" to save your tour as a JSON file
+   - Use the "Tour System" section in the "Presets & Tours" panel
+   - Click "🎬 Start Tour Recording (T)" to begin recording
+   - Navigate to interesting locations and click "📍 Register Point" to add waypoints
+   - Click "✅ Finish Tour" to save your tour as a JSON file
 
 2. **Playing Tours**:
-   - Pre-recorded tours appear as buttons (T01, T02, etc.) in the preset menu
-   - Click a tour button to start playback with smooth transitions between points
+   - Pre-recorded tours are available in the "Presets & Tours" panel (top center)
+   - Click "▼ Select Tour" dropdown to choose from T01-T04 tours
+   - Select a tour to start playback with smooth transitions between points
    - All fractal settings, camera positions, and render settings are preserved
    - Press 'Esc' at any time to stop playback
 
