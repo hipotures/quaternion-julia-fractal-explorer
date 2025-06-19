@@ -23,9 +23,11 @@ import { pane, folders, bindingState } from './core.js';
 /**
  * Creates the fractal parameters section with all related controls
  */
-export function createFractalParametersFolder() {
+export function createFractalParametersFolder(targetPane = null) {
+    const usePane = targetPane || pane;
+    
     // Create main folder
-    folders.fractal = pane.addFolder({
+    folders.fractal = usePane.addFolder({
         title: 'Fractal Parameters',
         expanded: true
     });
@@ -65,7 +67,9 @@ export function createFractalParametersFolder() {
     }).on('click', () => {
         resetFractalParams();
         // Update UI after randomization
-        pane.refresh();
+        import('./core.js').then(module => {
+            if (module.refreshUI) module.refreshUI();
+        });
     });
     
     // Create sub-sections

@@ -14,9 +14,11 @@ import { pane, folders } from './core.js';
 /**
  * Creates the rendering quality control section
  */
-export function createRenderingFolder() {
+export function createRenderingFolder(targetPane = null) {
+    const usePane = targetPane || pane;
+    
     // Create main folder
-    folders.rendering = pane.addFolder({
+    folders.rendering = usePane.addFolder({
         title: 'Rendering Quality',
         expanded: true
     });
@@ -29,7 +31,9 @@ export function createRenderingFolder() {
         step: 20
     }).on('change', () => {
         // No direct call needed as we're modifying the state directly
-        pane.refresh();
+        import('./core.js').then(module => {
+            if (module.refreshUI) module.refreshUI();
+        });
     });
     
     // Feature toggles

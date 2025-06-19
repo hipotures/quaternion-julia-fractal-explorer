@@ -68,11 +68,47 @@ The application features two interface panels:
 |---------|--------|-------------------|
 | M | Show/hide controls menu | - |
 | P | Show/hide stats panel | - |
+| G | Show/hide advanced controls panel | - |
 | S | Take a screenshot of the fractal | - |
 | V | Start/stop video recording | "REC" indicator when active |
 | Q | Change recording quality | "Rec quality" |
 | T | Open tour recording menu | - |
 | Esc | Stop tour playback | - |
+
+### Advanced Color Effects (Shift + Key Combinations)
+| Control | Action | Stats Panel Value |
+|---------|--------|-------------------|
+| Shift + C | Toggle color animation | "Color anim: ON/OFF" |
+| Shift + S | Increase color saturation (+Ctrl to decrease) | "Saturation" |
+| Shift + B | Increase color brightness (+Ctrl to decrease) | "Brightness" |
+| Shift + N | Increase color contrast (+Ctrl to decrease) | "Contrast" |
+| Shift + P | Increase color phase shift (+Ctrl to decrease) | "Phase shift" |
+| Shift + A | Increase color animation speed (+Ctrl to decrease) | "Anim speed" |
+
+### Orbit Trap Effects (Shift + Key Combinations)
+| Control | Action | Stats Panel Value |
+|---------|--------|-------------------|
+| Shift + O | Toggle orbit trap effects | "Orbit trap: ON/OFF" |
+| Shift + T | Cycle orbit trap types | "Trap type" |
+| Shift + R | Increase orbit trap radius (+Ctrl to decrease) | "Trap radius" |
+| Shift + I | Increase orbit trap intensity (+Ctrl to decrease) | "Trap intensity" |
+
+### Physics-Based Coloring (Shift + Key Combinations)
+| Control | Action | Stats Panel Value |
+|---------|--------|-------------------|
+| Shift + F | Toggle physics-based coloring | "Physics color: ON/OFF" |
+| Shift + Y | Cycle physics color types | "Physics type" |
+| Shift + Q | Increase physics frequency (+Ctrl to decrease) | "Physics freq" |
+| Shift + W | Increase physics waves (+Ctrl to decrease) | "Physics waves" |
+| Shift + E | Increase physics intensity (+Ctrl to decrease) | "Physics intensity" |
+| Shift + D | Increase physics balance (+Ctrl to decrease) | "Physics balance" |
+
+### Quick Access Shortcuts
+| Control | Action | Notes |
+|---------|--------|-------|
+| O | Toggle orbit trap (quick access) | Same as Shift + O |
+| F | Toggle physics color (quick access) | Same as Shift + F |
+| C | Toggle color animation (quick access) | Same as Shift + C |
 
 ## Statistics Panel Sections
 
@@ -153,6 +189,42 @@ No complex installation process is required! Simply follow these steps:
 - Toggle different rendering features (keys 3-8) to see their impact on visual quality
 - Experiment with different color palettes using the '6' key
 - Press 'T' to open the tour recording menu and create your own guided tour
+
+## Advanced Features Guide
+
+### Dynamic Color Effects
+The application includes sophisticated color manipulation beyond basic palettes:
+
+- **Color Animation** (Shift + C): Animates colors through the spectrum over time
+- **Saturation Control** (Shift + S): Adjusts color intensity from grayscale to vivid
+- **Brightness Control** (Shift + B): Controls overall color brightness
+- **Contrast Control** (Shift + N): Adjusts color contrast for dramatic effects
+- **Phase Shift** (Shift + P): Rotates colors through the spectrum
+- **Animation Speed** (Shift + A): Controls how fast color animations cycle
+
+### Orbit Trap Visualization
+Orbit traps create stunning geometric patterns by tracking how fractal iterations interact with shapes:
+
+- **Toggle Orbit Traps** (Shift + O or O): Enable psychedelic geometric coloring
+- **Trap Types** (Shift + T): Cycle through circle, line, point, and cross patterns
+- **Trap Radius** (Shift + R): Size of the geometric trap shape
+- **Trap Intensity** (Shift + I): How strongly the trap affects the coloring
+
+### Physics-Based Coloring
+Advanced coloring that simulates optical phenomena:
+
+- **Toggle Physics Color** (Shift + F or F): Enable physics-based color effects
+- **Physics Types** (Shift + Y): Switch between diffraction, interference, and emission spectrum effects
+- **Frequency** (Shift + Q): Controls the wavelength of optical effects
+- **Wave Count** (Shift + W): Number of interference waves
+- **Intensity** (Shift + E): Strength of the physics effect
+- **Balance** (Shift + D): Blend between different physics models
+
+### Pro Tips for Advanced Features
+- Use **Ctrl + Shift + Key** to decrease values instead of increase
+- Combine different effects: try orbit traps with physics-based coloring
+- Advanced effects work best with smooth coloring enabled (key '5')
+- Use the advanced controls panel (G key) for precise numeric adjustments
 
 ## Tour System
 

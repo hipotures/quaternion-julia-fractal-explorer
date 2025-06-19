@@ -20,6 +20,15 @@ import {
     // Quality settings
     updateQualityUniforms,
     
+    // Recording UI
+    refreshRecordingUI,
+    
+    // Interface UI
+    refreshInterfaceUI,
+    
+    // Monitoring UI
+    refreshMonitoringUI,
+    
     // Settings management
     getSettingsSnapshot,
     applySettings,
@@ -39,6 +48,9 @@ export {
     folders,
     bindingState,
     updateQualityUniforms,
+    refreshRecordingUI,
+    refreshInterfaceUI,
+    refreshMonitoringUI,
     getSettingsSnapshot,
     applySettings,
     resetAllToDefaults,

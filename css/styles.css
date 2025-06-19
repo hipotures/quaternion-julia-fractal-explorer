@@ -7,7 +7,7 @@ body {
 canvas {
   display: block;
 }
-/* Menu panel (M key) */
+/* Menu panel (M key) - Disabled by default, use Tweakpane instead */
 #menu {
   position: absolute;
   top: 10px;
@@ -22,6 +22,7 @@ canvas {
   max-width: 390px; /* Increased by 30% from original 300px */
   user-select: text; /* Enable text selection */
   cursor: auto; /* Standard text cursor */
+  display: none; /* Disabled by default - legacy menu for verification only */
 }
 /* h2 heading removed */
 #menu ul {
@@ -52,7 +53,7 @@ canvas {
   background-color: #555;
   margin: 0;
 }
-/* Stats panel (right side) */
+/* Stats panel (right side) - Disabled by default, use Tweakpane instead */
 #stats {
   position: absolute;
   top: 10px;
@@ -70,6 +71,7 @@ canvas {
   -ms-user-select: text !important;
   cursor: auto !important; /* Force standard cursor */
   pointer-events: auto !important; /* Ensure mouse events are handled */
+  display: none; /* Disabled by default - legacy stats panel for verification only */
 }
 
 /* New styles for stats panel categories */
@@ -102,7 +104,7 @@ canvas {
   cursor: text !important;
 }
 
-/* Preset buttons for configurations */
+/* Preset buttons for configurations - Disabled by default, use Tweakpane instead */
 #preset-menu {
   position: absolute;
   top: 10px;
@@ -114,7 +116,7 @@ canvas {
   border-radius: 5px;
   z-index: 102;
   text-align: center;
-  display: flex;
+  display: none; /* Disabled by default - legacy preset menu for verification only */
   flex-direction: column;
   align-items: center;
   max-width: 95%;

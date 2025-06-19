@@ -25,9 +25,11 @@ import { pane, folders, bindingState } from './core.js';
 /**
  * Creates all color control sections and sub-sections
  */
-export function createColorControlsFolder() {
+export function createColorControlsFolder(targetPane = null) {
+    const usePane = targetPane || pane;
+    
     // Create main folder
-    folders.color = pane.addFolder({
+    folders.color = usePane.addFolder({
         title: 'Color Effects',
         expanded: true
     });
@@ -142,7 +144,9 @@ function createOrbitTrapFolder() {
             physicsColorSettings.enabled = false;
             updatePhysicsColorUniforms(physicsColorSettings);
             // Refresh UI to reflect changes
-            pane.refresh();
+            import('./core.js').then(module => {
+                if (module.refreshUI) module.refreshUI();
+            });
         }
         updateOrbitTrapUniforms(orbitTrapSettings);
     });
@@ -195,7 +199,9 @@ function createPhysicsColorsFolder() {
             orbitTrapSettings.enabled = false;
             updateOrbitTrapUniforms(orbitTrapSettings);
             // Refresh UI to reflect changes
-            pane.refresh();
+            import('./core.js').then(module => {
+                if (module.refreshUI) module.refreshUI();
+            });
         }
         updatePhysicsColorUniforms(physicsColorSettings);
     });

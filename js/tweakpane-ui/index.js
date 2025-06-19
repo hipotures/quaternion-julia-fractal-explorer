@@ -18,6 +18,15 @@ export {
 // Export quality uniform update function
 export { updateQualityUniforms } from './rendering.js';
 
+// Export recording UI functions
+export { refreshRecordingUI } from './recording.js';
+
+// Export interface UI functions
+export { refreshInterfaceUI } from './interface.js';
+
+// Export monitoring UI functions
+export { refreshMonitoringUI } from './monitoring.js';
+
 // Export settings functionality
 export { getSettingsSnapshot } from './settings-snapshot.js';
 export { applySettings } from './settings-apply.js';

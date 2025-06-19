@@ -6,6 +6,13 @@
  */
 
 import { CONFIG } from '../config.js';
+import { 
+    colorSettings, 
+    crossSectionSettings, 
+    orbitTrapSettings, 
+    physicsColorSettings 
+} from '../fractal.js';
+import { cameraState } from '../camera.js';
 
 // Import section creators from other modules
 import { createFractalParametersFolder } from './fractal.js';
@@ -13,12 +20,22 @@ import { createColorControlsFolder } from './color.js';
 import { createRenderingFolder } from './rendering.js';
 import { createCameraControlsFolder } from './camera.js';
 import { createPresetsFolder } from './presets-ui.js';
+import { createRecordingFolder } from './recording.js';
+import { createInterfaceFolder } from './interface.js';
+import { createSystemMonitorFolder, initializeMonitoring } from './monitoring.js';
+import { createSettingsFolder } from './settings.js';
+import { 
+    initializePaneLayout, 
+    createMainPane,
+    createParametersPane, 
+    createPresetsPane,
+    refreshAllPanes,
+    folders as layoutFolders
+} from './layout.js';
 
-// The main Tweakpane instance
-export let pane = null;
-
-// Container element for the panel
-export let container = null;
+// Export the panes for backward compatibility
+export let pane = null; // Will be set to mainPane
+export let container = null; // Will be set to main container
 
 // Reference to folders for organization
 export const folders = {};
@@ -44,34 +61,32 @@ export const bindingState = {
     // For camera focal length (zoom)
     focalLength: {
         value: 1.5 // Default value
-    }
+    },
+    // Recording controls
+    recordingQuality: { value: 0 },
+    recordingStatus: 'Stopped',
+    screenshotFormat: { value: 0 },
+    // Interface controls
+    autoCollapse: { value: false },
+    showLegacyMenu: { value: false },
+    showLegacyPresets: { value: false },
+    showLegacyStats: { value: false },
+    tourStatus: 'Inactive',
+    // Monitoring values
+    currentFPS: 60.0,
+    cameraVelocity: 0.0,
+    appStatus: 'Running',
+    animationStatus: 'Active',
+    recordingStatusMonitor: 'Stopped',
+    activeEffects: 'Basic'
 };
 
 /**
- * Creates and initializes the Tweakpane panel
+ * Creates and initializes the Tweakpane UI layout
  */
 export function initTweakpane() {
     // Exit if already initialized
     if (pane) return;
-    
-    // Create container if it doesn't exist
-    if (!document.getElementById('tweakpane-container')) {
-        container = document.createElement('div');
-        container.id = 'tweakpane-container';
-        document.body.appendChild(container);
-        
-        // Apply styles
-        container.style.position = 'absolute';
-        container.style.top = '10px';
-        container.style.left = '10px';
-        container.style.zIndex = '1000';
-        container.style.maxHeight = '95vh';
-        container.style.overflow = 'auto';
-        container.style.backgroundColor = 'rgba(29, 29, 32, 0.8)';
-        container.style.borderRadius = '6px';
-    } else {
-        container = document.getElementById('tweakpane-container');
-    }
     
     // Load Tweakpane from global scope (CDN)
     if (typeof Tweakpane === 'undefined') {
@@ -79,69 +94,116 @@ export function initTweakpane() {
         return;
     }
     
-    // Create the pane instance
-    pane = new Tweakpane.Pane({
-        title: 'Fractal Controls',
-        expanded: true,
-        container: container
+    // Initialize the multi-pane layout
+    if (!initializePaneLayout()) {
+        return;
+    }
+    
+    // Create the pane instances
+    const mainPaneInstance = createMainPane();
+    const parametersPaneInstance = createParametersPane();
+    const presetsPaneInstance = createPresetsPane();
+    
+    // Set backward compatibility reference
+    pane = mainPaneInstance;
+    container = document.getElementById('tweakpane-main-container');
+    
+    // Create main controls (left side) - podstawowe kontrole bez presets i monitoring
+    createFractalParametersFolder(mainPaneInstance);
+    createColorControlsFolder(mainPaneInstance);
+    createRenderingFolder(mainPaneInstance);
+    createCameraControlsFolder(mainPaneInstance);
+    createRecordingFolder(mainPaneInstance);
+    createSettingsFolder(mainPaneInstance);
+    createInterfaceFolder(mainPaneInstance);
+    
+    // Create parameters monitor (right side) - System Monitor
+    createSystemMonitorFolder(parametersPaneInstance);
+    
+    // Create presets panel (top center, collapsed) - Quaternion & Tour Presets
+    createPresetsFolder(presetsPaneInstance);
+    
+    // Add toggle buttons for all panes (simplified version)
+    addSimpleToggleButtons();
+    
+    // Initialize monitoring system
+    initializeMonitoring();
+    
+    // Ensure legacy UI is hidden by default
+    ensureLegacyUIHidden();
+    
+    // Block scroll events for all Tweakpane containers
+    blockScrollOnTweakpaneContainers();
+    
+    console.log('Multi-pane Tweakpane UI initialized');
+}
+
+// Functions removed - now handled by layout.js
+
+/**
+ * Adds simple toggle buttons that work with layout.js
+ */
+function addSimpleToggleButtons() {
+    // Import toggle functions from layout.js
+    import('./layout.js').then(module => {
+        // Main controls toggle (G key functionality)
+        document.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'g') {
+                module.togglePaneVisibility('main');
+            }
+        });
+        
+        console.log('Pane toggle functionality initialized (G key for main controls)');
     });
-    
-    // Initialize all folders and controls
-    createFractalParametersFolder();
-    createColorControlsFolder();
-    createRenderingFolder();
-    createCameraControlsFolder();
-    createPresetsFolder();
-    
-    // Add button to toggle panel visibility
-    addPanelToggleButton();
-    
-    console.log('Tweakpane UI initialized');
 }
 
 /**
- * Adds a button to toggle the entire panel
+ * Ensures legacy UI panels are hidden by default
  */
-function addPanelToggleButton() {
-    // Create a button element
-    const toggleButton = document.createElement('button');
-    toggleButton.textContent = '≡'; // Hamburger icon
-    toggleButton.title = 'Toggle Controls Panel';
-    toggleButton.id = 'tweakpane-toggle';
-    
-    // Style the button
-    Object.assign(toggleButton.style, {
-        position: 'absolute',
-        top: '10px',
-        left: container.style.display === 'none' ? '10px' : '310px', // Adjust based on visibility
-        zIndex: '1001',
-        width: '30px',
-        height: '30px',
-        borderRadius: '50%',
-        background: 'rgba(40, 40, 45, 0.8)',
-        color: 'white',
-        border: 'none',
-        fontSize: '20px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'left 0.3s ease-in-out'
-    });
-    
-    // Add to document body
-    document.body.appendChild(toggleButton);
-    
-    // Add event listener
-    toggleButton.addEventListener('click', () => {
-        if (container.style.display === 'none') {
-            container.style.display = 'block';
-            toggleButton.style.left = '310px';
-        } else {
-            container.style.display = 'none';
-            toggleButton.style.left = '10px';
+function ensureLegacyUIHidden() {
+    // Wait for DOM to be ready
+    setTimeout(() => {
+        const legacyMenu = document.getElementById('menu');
+        const legacyPresets = document.getElementById('preset-menu');
+        const legacyStats = document.getElementById('stats');
+        
+        if (legacyMenu) {
+            legacyMenu.style.display = 'none';
         }
-    });
+        if (legacyPresets) {
+            legacyPresets.style.display = 'none';
+        }
+        if (legacyStats) {
+            legacyStats.style.display = 'none';
+        }
+        
+        console.log('Legacy UI panels explicitly hidden');
+    }, 100); // Small delay to ensure DOM is ready
+}
+
+/**
+ * Blocks scroll events on all Tweakpane containers to prevent interference with main app
+ */
+function blockScrollOnTweakpaneContainers() {
+    // Wait for containers to be created
+    setTimeout(() => {
+        const containers = [
+            'tweakpane-main-container',
+            'tweakpane-parameters-container', 
+            'tweakpane-presets-container'
+        ];
+        
+        containers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.addEventListener('wheel', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+                
+                console.log(`Scroll blocking enabled for ${containerId}`);
+            }
+        });
+    }, 200); // Small delay to ensure containers are created
 }
 
 /**
@@ -157,8 +219,8 @@ export function refreshUI() {
     bindingState.physicsColorTypeSelector.value = physicsColorSettings.type;
     bindingState.focalLength.value = cameraState.focalLength;
     
-    // Refresh all controls
-    pane.refresh();
+    // Refresh all panes
+    refreshAllPanes();
 }
 
 /**
@@ -180,12 +242,3 @@ export function toggleTweakpaneVisibility() {
         console.log('Tweakpane UI: Hidden');
     }
 }
-
-// Import required settings for refreshUI
-import { 
-    colorSettings, 
-    crossSectionSettings, 
-    orbitTrapSettings, 
-    physicsColorSettings 
-} from '../fractal.js';
-import { cameraState } from '../camera.js';

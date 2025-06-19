@@ -46,8 +46,8 @@ const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATU
 /**
  * UI state variables
  */
-let showStats = true; // Stats panel visibility
-let showMenu = true; // Menu visibility
+let showStats = false; // Stats panel visibility - disabled by default, use Tweakpane instead
+let showMenu = false; // Menu visibility - disabled by default, use Tweakpane instead
 
 /**
  * Updates the content of the statistics panel

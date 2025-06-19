@@ -13,9 +13,11 @@ import { pane, folders, bindingState } from './core.js';
 /**
  * Creates the camera control section
  */
-export function createCameraControlsFolder() {
+export function createCameraControlsFolder(targetPane = null) {
+    const usePane = targetPane || pane;
+    
     // Create main folder
-    folders.camera = pane.addFolder({
+    folders.camera = usePane.addFolder({
         title: 'Camera Controls',
         expanded: true
     });
@@ -69,5 +71,7 @@ function resetCamera() {
     
     // Update UI
     bindingState.focalLength.value = cameraState.focalLength;
-    pane.refresh();
+    import('./core.js').then(module => {
+        if (module.refreshUI) module.refreshUI();
+    });
 }
