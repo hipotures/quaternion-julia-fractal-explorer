@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Headers Configuration Examples</title>
+</head>
+<body>
+    <h1>Security Headers Configuration</h1>
+    <p>This file contains example security headers for different web servers.</p>
+    
+    <h2>Apache (.htaccess)</h2>
+    <pre>
+# Content Security Policy
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; media-src 'self'"
+
+# Prevent clickjacking
+Header always set X-Frame-Options "DENY"
+
+# Prevent MIME type sniffing
+Header always set X-Content-Type-Options "nosniff"
+
+# Enable XSS protection
+Header always set X-XSS-Protection "1; mode=block"
+
+# Referrer policy
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Remove server signature
+Header always unset Server
+ServerTokens Prod
+    </pre>
+    
+    <h2>Nginx</h2>
+    <pre>
+# Content Security Policy
+add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; media-src 'self'" always;
+
+# Security headers
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+# Hide server info
+server_tokens off;
+    </pre>
+    
+    <h2>Node.js/Express</h2>
+    <pre>
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; media-src 'self'");
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+    </pre>
+    
+    <h2>Python/Flask</h2>
+    <pre>
+@app.after_request
+def set_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; media-src 'self'"
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    return response
+    </pre>
+    
+    <h2>Important Notes</h2>
+    <ul>
+        <li><strong>CSP 'unsafe-inline'</strong>: Required for CSS styles. Consider moving to external CSS files to remove this.</li>
+        <li><strong>HTTPS</strong>: Always use HTTPS in production. Add <code>Strict-Transport-Security</code> header.</li>
+        <li><strong>File permissions</strong>: Ensure proper file permissions (644 for files, 755 for directories).</li>
+        <li><strong>Directory listing</strong>: Disable directory listing on your web server.</li>
+    </ul>
+</body>
+</html>

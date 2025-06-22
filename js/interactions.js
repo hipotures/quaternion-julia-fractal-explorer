@@ -1,5 +1,5 @@
 import { renderer } from './scene.js';
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+import * as THREE from './lib/three.module.min.js';
 import { uniforms, getRotationMatrix, updateFractalParamsUniform } from './shaders.js'; // Import uniforms for raycasting estimate
 import { CONFIG } from './config.js'; // Import configuration values
 import { handleScreenshotKeys } from './screenshot.js'; // Import screenshot functionality

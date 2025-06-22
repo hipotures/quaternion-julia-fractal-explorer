@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <title>Quaternion Julia Fractal Explorer</title>
   <link rel="stylesheet" href="css/styles.css">
-  <!-- Tweakpane for UI controls -->
-  <script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.7/dist/tweakpane.min.js"></script>
+  <!-- Tweakpane for UI controls (local) -->
+  <script src="js/lib/tweakpane.min.js"></script>
 </head>
 <body>
   <!-- Controls menu (can be hidden with M key) -->
@@ -138,8 +138,8 @@
   <!-- Tour playback status bar (bottom) -->
   <div id="tour-status"></div>
 
-  <!-- Import Three.js from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js library (local) - NOTE: ES6 module imports handled in JS files -->
+  <!-- <script src="js/lib/three.module.min.js"></script> -->
   <!-- Import main application module -->
   <script type="module" src="js/main.js"></script>
 </body>

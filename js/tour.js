@@ -52,6 +52,14 @@ export async function loadAvailableTours() {
         // until we encounter the first missing file
         while (hasMore) {
             const fileName = CONFIG.TOURS.FILE_PATTERN.replace('{NUM}', index.toString().padStart(2, '0'));
+            
+            // Security: Validate filename to prevent path traversal attacks
+            if (!isValidTourFileName(fileName)) {
+                console.warn(`Invalid tour filename detected: ${fileName}`);
+                hasMore = false;
+                break;
+            }
+            
             try {
                 const response = await fetch(`${CONFIG.TOURS.PATH}${fileName}`);
                 if (response.ok) {
@@ -123,3 +131,19 @@ export {
     isTourPlaying,
     updateTourPlayback
 } from './tourPlayback.js';
+
+/**
+ * Security function to validate tour filenames and prevent path traversal attacks
+ * @param {string} fileName - The filename to validate
+ * @returns {boolean} - True if filename is safe, false otherwise
+ */
+function isValidTourFileName(fileName) {
+    // Check for path traversal patterns
+    if (fileName.includes('..') || fileName.includes('/') || fileName.includes('\\')) {
+        return false;
+    }
+    
+    // Only allow tour files with expected pattern (tour01.json, tour02.json, etc.)
+    const validPattern = /^tour\d{2}\.json$/;
+    return validPattern.test(fileName);
+}

@@ -5,7 +5,7 @@
  * @module main
  */
 
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+import * as THREE from './lib/three.module.min.js';
 import { scene, renderer, handleResize } from './scene.js';
 import { camera, setupInitialCamera, updateTargetAnimation, checkReturnToStart, updateCameraMovement } from './camera.js';
 import { fractalState, updateSlice } from './fractal.js';

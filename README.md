@@ -326,6 +326,19 @@ This feature overcomes a common issue in 3D exploration where maintaining a cons
 - Disabling ambient occlusion (key '4') can significantly improve performance
 - Enabling adaptive ray marching (key '8') improves performance in complex scenes
 
+## Security
+
+This application has been hardened for public deployment:
+
+- **Local Dependencies**: All external libraries (Three.js, Tweakpane) are bundled locally to prevent CDN-based attacks
+- **Path Traversal Protection**: Tour file loading includes validation to prevent unauthorized file access
+- **No Server-Side Code**: Pure client-side application minimizes attack surface
+- **Content Security Policy Ready**: Compatible with strict CSP headers for XSS protection
+
+For detailed security information and deployment guidelines, see `SECURITY.md`.
+
+**Important**: When deploying publicly, configure proper security headers and exclude development files (`package.json`, `node_modules/`, etc.) from web access.
+
 ## License
 
 This project is released under the MIT License.

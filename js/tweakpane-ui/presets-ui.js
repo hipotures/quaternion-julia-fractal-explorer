@@ -5,7 +5,7 @@
  * @module tweakpane-ui/presets-ui
  */
 
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+import * as THREE from '../lib/three.module.min.js';
 import { pane, folders, bindingState } from './core.js';
 import { resetAllToDefaults } from './settings-reset.js';
 import { saveCurrentSettings, loadSavedSettings } from './settings-storage.js';

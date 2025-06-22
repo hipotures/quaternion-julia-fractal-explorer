@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+import * as THREE from './lib/three.module.min.js';
 import { uniforms, vertexShader, fragmentShader, updateResolutionUniform } from './shaders.js';
 import { camera } from './camera.js'; // Only need the camera object for the renderer
 

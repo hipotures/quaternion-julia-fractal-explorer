@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+import * as THREE from './lib/three.module.min.js';
 import { uniforms, updateCameraUniforms, getRotationMatrix } from './shaders.js';
 import { isWheelButtonPressed } from './interactions.js'; // Import for mouse wheel press detection
 import { CONFIG } from './config.js'; // Import configuration values
