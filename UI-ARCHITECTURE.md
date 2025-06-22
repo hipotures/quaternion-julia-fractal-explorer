@@ -70,41 +70,76 @@ The UI consists of three independent Tweakpane instances positioned at different
 #### `monitoring.js` - System Monitoring
 - **Purpose**: Real-time performance monitoring and parameter display
 - **Key Functions**:
-  - `createSystemMonitorFolder()`: Main monitoring interface
-  - `createPerformanceMonitorFolder()`: FPS graphs and metrics
-  - `createParameterMonitorFolder()`: Live parameter display
-  - `createSystemStatusFolder()`: Application status indicators
+  - `createSystemMonitorFolder()`: Main monitoring interface coordination
+  - `createPerformanceMonitorFolder()`: FPS graphs with 60-second history, performance metrics
+  - `createParameterMonitorFolder()`: Live quaternion values, camera position, slice parameters
+  - `createSystemStatusFolder()`: Recording status, animation state, active effects display
+- **Update Frequency**: 100ms intervals for real-time responsiveness
+- **Data Sources**: Integrates with fractalState, cameraState, qualitySettings, recording status
 
 ### Specialized Control Modules
 
 #### `presets-ui.js` - Preset Management
 - **Purpose**: Quaternion and tour preset selection with dropdown menus
 - **Key Features**:
-  - Context menu dropdowns for space-efficient preset selection
-  - Automatic menu reset after selection
-  - Scroll event isolation within menus
-- **Presets**: Q01-Q13 quaternion configurations, T01-T04 tour recordings
+  - Context menu dropdowns (300px wide) for space-efficient preset selection
+  - Automatic menu reset after selection with 100ms delay
+  - Scroll event isolation within menus using `stopPropagation()`
+  - Tour system controls: recording, playback, point registration
+- **Presets**: Q01-Q13 quaternion configurations with precise parameter values, T01-T04 tour recordings
+- **Integration**: Directly modifies fractalState.params and triggers camera animations
 
 #### `recording.js` - Media Controls
-- **Purpose**: Video recording and screenshot functionality
+- **Purpose**: Video recording and screenshot functionality with quality management
 - **Key Features**:
-  - Recording quality selection (Normal/High/Ultra)
-  - Status monitoring with visual indicators
-  - Screenshot format options
+  - Recording quality selection (Normal: 5Mbps, High: 10Mbps, Ultra: 16Mbps)
+  - Real-time status monitoring with emoji indicators (🔴 Recording, ⚫ Stopped)
+  - Screenshot format options (PNG, JPG, WebP) with quality selection
+  - Integration with recorder.js and screenshot.js modules
+- **UI Updates**: Automatic refresh of recording status every 100ms during active recording
 
 #### `interface.js` - Panel Controls
-- **Purpose**: UI panel visibility toggles and legacy verification
+- **Purpose**: UI panel visibility toggles and legacy verification system
 - **Key Features**:
-  - Toggle controls for all panel types
-  - Legacy UI verification mode
-  - Panel state management
+  - Panel visibility controls with keyboard shortcuts (G key for main panel)
+  - Legacy UI verification mode with individual toggles for menu, presets, stats panels
+  - Auto-collapse functionality for panel management
+  - Integration with ui.js for legacy DOM manipulation
+- **Legacy Integration**: Provides verification toggles for comparing old vs new UI systems
 
-#### `settings.js` - Configuration Management
-- **Purpose**: Settings import/export and application reset
-- **Key Features**:
-  - Complete settings export/import
-  - Selective reset functionality
-  - Local storage management
+#### Settings Module System - Configuration Management
+
+The settings system is distributed across 6 specialized modules:
+
+**`settings.js` - Main UI Controls**
+- Creates the Settings Management folder in main panel
+- Provides buttons for reset, save, load, export, import operations
+- Coordinates with other settings modules for functionality
+
+**`settings-apply.js` - State Application**
+- Applies loaded settings to fractal parameters, camera state, quality settings
+- Handles state synchronization across application modules
+- Ensures UI reflects loaded settings
+
+**`settings-io.js` - File Operations**
+- JSON serialization/deserialization of complete application state
+- File download/upload handling for settings export/import
+- Error handling for malformed settings files
+
+**`settings-reset.js` - Reset Functionality**
+- Restores all settings to default values
+- Coordinates reset across fractal, camera, quality, and UI modules
+- Maintains system stability during reset operations
+
+**`settings-snapshot.js` - State Capture**
+- Captures current application state for saving/export
+- Creates comprehensive snapshots including all parameters
+- Handles state validation and integrity checks
+
+**`settings-storage.js` - Persistence**
+- LocalStorage-based settings persistence
+- Automatic settings backup and restoration
+- Storage quota management and cleanup
 
 ## State Management
 
