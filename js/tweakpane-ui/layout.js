@@ -182,3 +182,21 @@ export function togglePaneVisibility(paneName) {
         container.style.display = isVisible ? 'none' : 'block';
     }
 }
+
+/**
+ * Hides all panes (useful for clean recording)
+ */
+export function hideAllPanes() {
+    if (mainContainer) mainContainer.style.display = 'none';
+    if (parametersContainer) parametersContainer.style.display = 'none';
+    if (presetsContainer) presetsContainer.style.display = 'none';
+}
+
+/**
+ * Shows all panes (useful for restoring visibility after recording)
+ */
+export function showAllPanes() {
+    if (mainContainer) mainContainer.style.display = 'block';
+    if (parametersContainer) parametersContainer.style.display = 'block';
+    if (presetsContainer) presetsContainer.style.display = 'block';
+}

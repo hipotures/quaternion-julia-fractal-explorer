@@ -24,7 +24,6 @@ import {
     isTourPlaying,
     stopTourPlayback
 } from '../tour.js';
-import { toggleTourMenu } from '../ui.js';
 
 /**
  * Predefined quaternion parameter presets from the legacy UI
@@ -127,7 +126,7 @@ function createTourControlsFolder(parentPane) {
             console.log('Tour recording started');
             updateTourUI();
         } else {
-            toggleTourMenu(); // Open tour menu if already recording
+            // Note: toggleTourMenu removed - tour UI now integrated in Tweakpane
         }
     });
     

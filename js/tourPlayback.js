@@ -2,7 +2,6 @@ import { tourState } from './tour.js';
 import { cameraState } from './camera.js';
 import { fractalState, qualitySettings, colorSettings, crossSectionSettings } from './fractal.js';
 import { CONFIG } from './config.js'; // Import configuration values
-import { updateStatsPanel } from './ui.js'; // Import updateStatsPanel for direct access
 
 // --- Tour Playback Functions ---
 
@@ -58,7 +57,7 @@ export function startTourPlayback(tourData) {
     });
     
     // Show tour status bar and hide preset menu directly through DOM manipulation
-    const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
+    const tourStatusElement = document.getElementById('tour-status');
     
     if (tourStatusElement) {
         tourStatusElement.style.display = 'block';
@@ -78,7 +77,7 @@ export function startTourPlayback(tourData) {
     
     // Additional attempt to hide with delay to ensure menu will be hidden
     setTimeout(() => {
-        const retryElement = document.getElementById(CONFIG.UI.SELECTORS.PRESET_MENU);
+        const retryElement = document.getElementById('preset-menu');
         if (retryElement) {
             retryElement.style.display = 'none';
             retryElement.style.visibility = 'hidden';
@@ -127,7 +126,7 @@ export function stopTourPlayback() {
     tourState.playbackTime = 0;
     
     // Hide tour status bar
-    const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
+    const tourStatusElement = document.getElementById('tour-status');
     if (tourStatusElement) {
         tourStatusElement.style.display = 'none';
     }
@@ -171,7 +170,7 @@ export function updateTourPlayback(deltaTime) {
         tourState.tourEndingTime += deltaTime;
         
         // Update the status message
-        const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
+        const tourStatusElement = document.getElementById('tour-status');
         if (tourStatusElement) {
                 tourStatusElement.textContent = `${CONFIG.UI.TEXT.TOUR_COMPLETED}: ${tour.name || 'Tour'}`;
         }
@@ -203,7 +202,7 @@ export function updateTourPlayback(deltaTime) {
             tourState.currentPointIndex = tourState.nextPointIndex;
             
             // Update status bar
-            const tourStatusElement = document.getElementById(CONFIG.UI.SELECTORS.TOUR_STATUS);
+            const tourStatusElement = document.getElementById('tour-status');
             if (tourStatusElement) {
                 const statusText = CONFIG.UI.TEXT.TOUR_POINT_STATUS.replace('{NUM}', `${tourState.currentPointIndex + 1}/${tour.points.length}`);
                 tourStatusElement.textContent = `${tour.name || 'Tour'} - ${statusText}`;

@@ -69,9 +69,6 @@ export const bindingState = {
     screenshotFormat: { value: 0 },
     // Interface controls
     autoCollapse: { value: false },
-    showLegacyMenu: { value: false },
-    showLegacyPresets: { value: false },
-    showLegacyStats: { value: false },
     tourStatus: 'Inactive',
     // Monitoring values
     currentFPS: 60.0,
@@ -126,9 +123,6 @@ export function initTweakpane() {
     // Initialize monitoring system
     initializeMonitoring();
     
-    // Ensure legacy UI is hidden by default
-    ensureLegacyUIHidden();
-    
     // Block scroll events for all Tweakpane containers
     blockScrollOnTweakpaneContainers();
     
@@ -154,29 +148,6 @@ function addSimpleToggleButtons() {
     });
 }
 
-/**
- * Ensures legacy UI panels are hidden by default
- */
-function ensureLegacyUIHidden() {
-    // Wait for DOM to be ready
-    setTimeout(() => {
-        const legacyMenu = document.getElementById('menu');
-        const legacyPresets = document.getElementById('preset-menu');
-        const legacyStats = document.getElementById('stats');
-        
-        if (legacyMenu) {
-            legacyMenu.style.display = 'none';
-        }
-        if (legacyPresets) {
-            legacyPresets.style.display = 'none';
-        }
-        if (legacyStats) {
-            legacyStats.style.display = 'none';
-        }
-        
-        console.log('Legacy UI panels explicitly hidden');
-    }, 100); // Small delay to ensure DOM is ready
-}
 
 /**
  * Blocks scroll events on all Tweakpane containers to prevent interference with main app

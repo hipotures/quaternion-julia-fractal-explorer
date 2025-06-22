@@ -6,7 +6,6 @@
  */
 
 import { pane, folders, bindingState } from './core.js';
-import { toggleStats, toggleMenu } from '../ui.js';
 
 /**
  * Creates the interface controls section
@@ -22,7 +21,6 @@ export function createInterfaceFolder(targetPane = null) {
     
     // Create sub-sections
     createPanelControlsFolder();
-    createLegacyMenuFolder();
 }
 
 /**
@@ -34,29 +32,37 @@ function createPanelControlsFolder() {
         expanded: true
     });
     
-    // Stats panel toggle
+    // Panel visibility controls for recording
     panelFolder.addButton({
-        title: '📊 Toggle Stats Panel (P)'
+        title: '📊 Toggle Parameters Monitor (P)'
     }).on('click', () => {
-        toggleStats();
+        import('./layout.js').then(module => {
+            module.togglePaneVisibility('parameters');
+        });
     });
     
-    // Legacy menu toggle (for verification)
     panelFolder.addButton({
-        title: '📋 Toggle Legacy Menu (M)'
+        title: '🎛️ Toggle Presets & Tours Panel'
     }).on('click', () => {
-        toggleMenu();
+        import('./layout.js').then(module => {
+            module.togglePaneVisibility('presets');
+        });
     });
     
-    // Presets menu toggle
     panelFolder.addButton({
-        title: '🎛️ Toggle Presets Menu'
+        title: '🙈 Hide All Panels (H)'
     }).on('click', () => {
-        const presetMenuElement = document.getElementById('preset-menu');
-        if (presetMenuElement) {
-            const isVisible = presetMenuElement.style.display !== 'none';
-            presetMenuElement.style.display = isVisible ? 'none' : 'flex';
-        }
+        import('./layout.js').then(module => {
+            module.hideAllPanes();
+        });
+    });
+    
+    panelFolder.addButton({
+        title: '👁️ Show All Panels (U)'
+    }).on('click', () => {
+        import('./layout.js').then(module => {
+            module.showAllPanes();
+        });
     });
     
     // Tweakpane auto-collapse toggle
@@ -76,92 +82,6 @@ function createPanelControlsFolder() {
     });
 }
 
-// Tour System moved to presets-ui.js
-
-/**
- * Creates legacy menu controls sub-section
- */
-function createLegacyMenuFolder() {
-    const legacyFolder = folders.interface.addFolder({
-        title: 'Legacy UI (Verification)',
-        expanded: false // Collapsed by default since it's for verification only
-    });
-    
-    // Legacy menu visibility toggle
-    legacyFolder.addBinding(bindingState.showLegacyMenu, 'value', {
-        label: 'Show Legacy Menu (Left)'
-    }).on('change', (ev) => {
-        const menuElement = document.getElementById('menu');
-        if (menuElement) {
-            menuElement.style.display = ev.value ? 'block' : 'none';
-        }
-    });
-    
-    // Legacy preset menu toggle
-    legacyFolder.addBinding(bindingState.showLegacyPresets, 'value', {
-        label: 'Show Legacy Presets (Top)'
-    }).on('change', (ev) => {
-        const presetMenuElement = document.getElementById('preset-menu');
-        if (presetMenuElement) {
-            presetMenuElement.style.display = ev.value ? 'flex' : 'none';
-        }
-    });
-    
-    // Legacy stats panel toggle
-    legacyFolder.addBinding(bindingState.showLegacyStats, 'value', {
-        label: 'Show Legacy Stats (Right)'
-    }).on('change', (ev) => {
-        const statsElement = document.getElementById('stats');
-        if (statsElement) {
-            statsElement.style.display = ev.value ? 'block' : 'none';
-        }
-    });
-    
-    // Information text
-    legacyFolder.addButton({
-        title: 'ℹ️ Legacy UI Info'
-    }).on('click', () => {
-        alert('The legacy UI panels are kept for feature comparison and verification. All functionality has been moved to this modern Tweakpane interface. Use the toggles above to show/hide the old panels for comparison.');
-    });
-    
-    // Show all legacy UI button
-    legacyFolder.addButton({
-        title: '👁️ Show All Legacy UI'
-    }).on('click', () => {
-        bindingState.showLegacyMenu.value = true;
-        bindingState.showLegacyPresets.value = true;
-        bindingState.showLegacyStats.value = true;
-        
-        // Apply changes
-        document.getElementById('menu').style.display = 'block';
-        document.getElementById('preset-menu').style.display = 'flex';
-        document.getElementById('stats').style.display = 'block';
-        
-        // Refresh UI to show updated toggles
-        import('./core.js').then(module => {
-            if (module.refreshUI) module.refreshUI();
-        });
-    });
-    
-    // Hide all legacy UI button
-    legacyFolder.addButton({
-        title: '🙈 Hide All Legacy UI'
-    }).on('click', () => {
-        bindingState.showLegacyMenu.value = false;
-        bindingState.showLegacyPresets.value = false;
-        bindingState.showLegacyStats.value = false;
-        
-        // Apply changes
-        document.getElementById('menu').style.display = 'none';
-        document.getElementById('preset-menu').style.display = 'none';
-        document.getElementById('stats').style.display = 'none';
-        
-        // Refresh UI to show updated toggles
-        import('./core.js').then(module => {
-            if (module.refreshUI) module.refreshUI();
-        });
-    });
-}
 
 // Tour UI functions moved to presets-ui.js
 

@@ -1,5 +1,4 @@
 import { renderer } from './scene.js';
-import { toggleStats, setPauseVisuals } from './ui.js';
 import { camera, cameraState } from './camera.js';
 import { forceStatsUpdateFor } from './main.js'; // Import for forcing stats updates
 import { CONFIG } from './config.js'; // Import configuration values
@@ -18,7 +17,7 @@ let currentQuality = 'NORMAL'; // 'NORMAL', 'HIGH', 'ULTRA'
 export function initRecorder() {
     // Create recording indicator element (will appear top right when recording)
     recordingIndicator = document.createElement('div');
-    recordingIndicator.id = CONFIG.UI.SELECTORS.RECORDING_INDICATOR;
+    recordingIndicator.id = 'recording-indicator';
     recordingIndicator.innerHTML = CONFIG.RECORDER.UI_TEXT.RECORDING_INDICATOR;
     recordingIndicator.style.position = 'absolute';
     recordingIndicator.style.top = '10px';
@@ -115,12 +114,7 @@ export function startRecording() {
             recordingIndicator.dataset.blinkInterval = blink;
         }
         
-        // Hide stats panel during recording for better performance
-        if (document.getElementById('stats')) {
-            document.getElementById('stats').dataset.preRecordingState = 
-                document.getElementById('stats').style.display;
-            toggleStats(false); // Force hide
-        }
+        // Note: Legacy stats panel hiding removed - modern UI doesn't need this optimization
         
         console.log('Recording started. Press V again to stop.');
     } catch (error) {

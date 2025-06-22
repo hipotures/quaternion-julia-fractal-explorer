@@ -22,8 +22,6 @@ import {
     togglePhysicsColor, cyclePhysicsColorType, changePhysicsFrequency,
     changePhysicsWaves, changePhysicsIntensity, changePhysicsBalance
 } from './fractal.js';
-// Placeholder imports - these functions will be defined in their respective modules later
-import { toggleStats, toggleMenu, toggleTourMenu } from './ui.js';
 import { togglePause, isPaused } from './main.js'; // Need isPaused to prevent input during pause
 import { toggleRecording, isCurrentlyRecording, cycleQuality } from './recorder.js'; // Import recording functions
 import { isTourPlaying, stopTourPlayback } from './tour.js'; // Import tour functions
@@ -76,20 +74,30 @@ function estimateSimpleDistance(pos) {
 
 // --- Key handlers for different functional groups ---
 
-// Handle UI-related keys (stats, menu, tour, tweakpane)
+// Handle UI-related keys (tweakpane only)
 function handleUIKeys(key) {
     switch (key.toLowerCase()) {
-        case CONFIG.KEYS.TOGGLE_STATS:
-            toggleStats();
-            break;
-        case CONFIG.KEYS.TOGGLE_MENU:
-            toggleMenu();
-            break;
-        case CONFIG.KEYS.TOGGLE_TOUR:
-            toggleTourMenu();
-            break;
         case CONFIG.KEYS.TOGGLE_TWEAKPANE:
             toggleTweakpaneVisibility();
+            break;
+        case 'p': // Toggle Parameters Monitor (like old stats panel)
+            import('./tweakpane-ui/layout.js').then(module => {
+                module.togglePaneVisibility('parameters');
+            });
+            break;
+        case 'h': // Hide all panels for recording
+            import('./tweakpane-ui/layout.js').then(module => {
+                module.hideAllPanes();
+            });
+            break;
+        case 'u': // Show (Unhide) all panels after recording
+            import('./tweakpane-ui/layout.js').then(module => {
+                module.showAllPanes();
+            });
+            break;
+        // Note: Legacy UI keys (M, T) removed - functionality now in Tweakpane
+        default:
+            console.log(`UI key '${key}' no longer supported - use Tweakpane interface (G key)`);
             break;
     }
 }
@@ -337,8 +345,8 @@ function handleKeyDown(e) {
         return;
     }
     
-    // UI controls
-    if ([CONFIG.KEYS.TOGGLE_STATS, CONFIG.KEYS.TOGGLE_MENU, CONFIG.KEYS.TOGGLE_TOUR, CONFIG.KEYS.TOGGLE_TWEAKPANE].includes(key)) {
+    // UI controls (P, H, U keys for panel management)
+    if ([CONFIG.KEYS.TOGGLE_TWEAKPANE, 'p', 'h', 'u'].includes(key)) {
         handleUIKeys(key);
     }
     // Navigation controls

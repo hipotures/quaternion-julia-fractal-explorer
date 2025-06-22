@@ -10,7 +10,6 @@ import { scene, renderer, handleResize } from './scene.js';
 import { camera, setupInitialCamera, updateTargetAnimation, checkReturnToStart, updateCameraMovement } from './camera.js';
 import { fractalState, updateSlice } from './fractal.js';
 import { initInteractions } from './interactions.js';
-import { updateStatsPanel, setPauseVisuals } from './ui.js';
 import { updateTimeUniform } from './shaders.js';
 import { initRecorder } from './recorder.js';
 import { updateTourPlayback, isTourPlaying } from './tour.js';
@@ -87,7 +86,7 @@ function startAnimation() {
     if (!renderingPaused) return; // Already running
     renderingPaused = false;
     clock.start(); // Restart clock to avoid time jump
-    setPauseVisuals(false); // Update UI
+    // Animation resumed - pause visuals removed
     console.log("Animation Resumed");
     animate(); // Restart loop
 }
@@ -104,7 +103,7 @@ function stopAnimation() {
         animationFrameId = null;
     }
     clock.stop(); // Stop clock
-    setPauseVisuals(true); // Update UI
+    // Animation paused - pause visuals removed
     console.log("Animation Paused");
 }
 
@@ -150,20 +149,7 @@ function animate() {
         }
 
         // Update UI
-        // Check if we need to update stats even when hidden
-        if (forceStatsUpdate) {
-            // Check if we should stop forcing updates
-            if (performance.now() > forceStatsUpdateEndTime) {
-                forceStatsUpdate = false;
-                console.log("Stopped forcing stats updates");
-            } else {
-                // Force call the stats update function directly
-                updateStatsPanel(true); // Pass true to indicate forced update
-            }
-        } else {
-            // Regular update
-            updateStatsPanel();
-        }
+        // Note: Legacy updateStatsPanel calls removed - stats now handled by Tweakpane monitoring
         
         // Update Tweakpane UI to keep it in sync with application state
         refreshUI();

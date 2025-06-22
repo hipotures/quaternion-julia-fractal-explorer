@@ -23,7 +23,7 @@ The UI consists of three independent Tweakpane instances positioned at different
 - **Camera Controls**: Focal length, animations, reset functionality
 - **Recording & Media**: Video recording, screenshots, quality settings
 - **Settings Management**: Import/export, reset, save/load functionality
-- **Interface & Navigation**: Panel toggles, legacy UI verification
+- **Interface & Navigation**: Panel information and controls
 
 #### 2. Parameters Monitor Panel (Right Side)
 - **Container ID**: `tweakpane-parameters-container`

@@ -27,31 +27,26 @@ An interactive 3D explorer for quaternion Julia fractals, allowing real-time nav
 
 ## Controls Guide
 
-The application features a modern 3-panel interface system:
+The application features a modern 3-panel Tweakpane interface system:
 - **Main Controls Panel (Left)**: Complete fractal, rendering, and camera controls (toggle with 'G' key)
 - **Parameters Monitor Panel (Right)**: Real-time system monitoring with performance graphs and parameter displays
 - **Presets & Tours Panel (Top Center)**: Dropdown menus for quaternion presets (Q01-Q13), tour presets (T01-T04), and tour recording controls (collapsed by default)
 
-### Legacy UI Verification
-- Legacy panels available for comparison: 'M' (old controls), 'P' (old stats)
-- All functionality has been moved to the modern Tweakpane interface
-- Legacy panels are hidden by default for cleaner experience
-
 ### Navigation Controls
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | Mouse click | Move view to clicked point | - |
 | Mouse scroll | Move in viewing direction | "Velocity" |
 | Middle mouse button | Hold to maintain constant velocity | "Velocity" |
 | Arrow keys | Camera rotation in local axes | "Pitch", "Yaw" |
 | Ctrl + Arrows | Faster rotation (5x) | "Pitch", "Yaw" |
 | +/- | Zoom in/out (changes FOV) | "Focal length" |
-| Space | Pause/resume rendering | Red "PAUSED" overlay |
-| A | Toggle camera animations | "Animations: ON/OFF" |
+| Space | Pause/resume rendering | "App Status: Paused" |
+| A | Toggle camera animations | "Animation: Active/Disabled" |
 
 ### Fractal Parameters
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | R | Reset fractal parameters | "c" parameter values |
 | 0 | Toggle slice animation | "Slice", "Slice anim" |
 | < / > | Decrease/increase slice amplitude | "Slice range" |
@@ -59,8 +54,8 @@ The application features a modern 3-panel interface system:
 | [ / ] | Adjust cross-section distance | "CS Distance" |
 
 ### Rendering Quality
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | 1 / 2 | Increase/decrease iteration count | "Iterations" |
 | 3 | Toggle soft shadows | "Shadows: ON/OFF" |
 | 4 | Toggle ambient occlusion | "AO: ON/OFF" |
@@ -70,20 +65,31 @@ The application features a modern 3-panel interface system:
 | 8 | Toggle adaptive ray marching | "Adaptive RM: ON/OFF" |
 
 ### Interface & Recording
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
-| M | Show/hide legacy controls menu (verification) | - |
-| P | Show/hide legacy stats panel (verification) | - |
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | G | Toggle main Tweakpane controls panel | - |
+| P | Toggle Parameters Monitor panel | - |
+| H | Hide all panels (for recording) | - |
+| U | Show all panels (restore after recording) | - |
 | S | Take a screenshot of the fractal | - |
-| V | Start/stop video recording | "REC" indicator when active |
-| Q | Change recording quality | "Rec quality" |
-| T | Open tour recording menu | - |
+| V | Start/stop video recording | "Recording: Active" |
+| Q | Change recording quality | "Recording quality" |
 | Esc | Stop tour playback | - |
 
+**Panel Controls (in Interface & Navigation):**
+- **Toggle Parameters Monitor (P)**: Hide/show right-side monitoring panel
+- **Toggle Presets & Tours Panel**: Hide/show top-center presets panel  
+- **Hide All Panels (H)**: Hide all UI panels for clean video recording
+- **Show All Panels (U)**: Restore all panels after recording
+
+**Perfect Recording Workflow:**
+1. Press **H** to hide all panels before recording
+2. Record clean fractal video without UI
+3. Press **U** to restore all panels when done
+
 ### Advanced Color Effects (Shift + Key Combinations)
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | Shift + C | Toggle color animation | "Color anim: ON/OFF" |
 | Shift + S | Increase color saturation (+Ctrl to decrease) | "Saturation" |
 | Shift + B | Increase color brightness (+Ctrl to decrease) | "Brightness" |
@@ -92,16 +98,16 @@ The application features a modern 3-panel interface system:
 | Shift + A | Increase color animation speed (+Ctrl to decrease) | "Anim speed" |
 
 ### Orbit Trap Effects (Shift + Key Combinations)
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | Shift + O | Toggle orbit trap effects | "Orbit trap: ON/OFF" |
 | Shift + T | Cycle orbit trap types | "Trap type" |
 | Shift + R | Increase orbit trap radius (+Ctrl to decrease) | "Trap radius" |
 | Shift + I | Increase orbit trap intensity (+Ctrl to decrease) | "Trap intensity" |
 
 ### Physics-Based Coloring (Shift + Key Combinations)
-| Control | Action | Stats Panel Value |
-|---------|--------|-------------------|
+| Control | Action | Monitor Display |
+|---------|--------|--------------------|
 | Shift + F | Toggle physics-based coloring | "Physics color: ON/OFF" |
 | Shift + Y | Cycle physics color types | "Physics type" |
 | Shift + Q | Increase physics frequency (+Ctrl to decrease) | "Physics freq" |
@@ -116,9 +122,9 @@ The application features a modern 3-panel interface system:
 | F | Toggle physics color (quick access) | Same as Shift + F |
 | C | Toggle color animation (quick access) | Same as Shift + C |
 
-## Statistics Panel Sections
+## Parameters Monitor Panel
 
-The right-side stats panel displays the current state of the application in several categories:
+The right-side monitor panel displays real-time system information in three organized sections:
 
 ### FRACTAL PARAMETERS
 - Current quaternion Julia set parameter values (c.x, c.y, c.z, c.w)

@@ -75,38 +75,13 @@ export const CONFIG = {
         CROSS_SECTION_THRESHOLD: 0.01   // Threshold for cross-section rendering
     },
     
-    // UI selectors and texts
+    // UI texts (legacy selectors removed)
     UI: {
-        SELECTORS: {
-            STATS_PANEL: 'stats',
-            MENU_PANEL: 'menu',
-            PRESET_MENU: 'preset-menu',
-            TOUR_MENU: 'tour-menu',
-            TOUR_POINT_COUNT: 'tour-point-count',
-            REGISTER_POINT: 'register-point',
-            FINISH_TOUR: 'finish-tour',
-            CANCEL_TOUR: 'cancel-tour',
-            TOUR_PRESETS: 'tour-presets',
-            TOUR_STATUS: 'tour-status',
-            RECORDING_INDICATOR: 'recording-indicator'
-        },
         TEXT: {
             RECORDING_INDICATOR: 'REC ⚫',
             TOUR_POINT_STATUS: 'Tour - Point {NUM}',
             TOUR_COMPLETED: 'Tour Completed',
             TOUR_CANCEL_CONFIRM: 'Are you sure you want to cancel tour recording? All recorded points will be lost.'
-        },
-        PRESET_BUTTONS: {
-            Q01: 'q01',
-            Q02: 'q02', 
-            Q03: 'q03',
-            Q04: 'q04',
-            Q05: 'q05',
-            Q06: 'q06',
-            Q07: 'q07',
-            Q08: 'q08',
-            Q09: 'q09',
-            Q10: 'q10'
         }
     },
     
@@ -122,10 +97,7 @@ export const CONFIG = {
         MINUS: '-',
         EQUALS: '=',
         ESCAPE: 'Escape',
-        // Functional
-        TOGGLE_STATS: 'p',
-        TOGGLE_MENU: 'm',
-        TOGGLE_TOUR: 't',
+        // Functional (legacy keys p, m, t removed)
         TOGGLE_RECORDING: 'v',
         CYCLE_QUALITY: 'q',
         RESET: 'r',
