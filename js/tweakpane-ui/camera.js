@@ -26,7 +26,7 @@ export function createCameraControlsFolder(targetPane = null) {
     bindingState.focalLength.value = cameraState.focalLength;
     
     // Add controls
-    folders.camera.addInput(bindingState.focalLength, 'value', {
+    folders.camera.addBinding(bindingState.focalLength, 'value', {
         label: 'Focal Length (+/-)',
         min: 0.1, max: 24.0, step: 0.1
     }).on('change', (ev) => {
@@ -34,7 +34,7 @@ export function createCameraControlsFolder(targetPane = null) {
         updateCameraState();
     });
     
-    folders.camera.addInput(cameraState, 'animationEnabled', {
+    folders.camera.addBinding(cameraState, 'animationEnabled', {
         label: 'Animations (A)'
     });
     

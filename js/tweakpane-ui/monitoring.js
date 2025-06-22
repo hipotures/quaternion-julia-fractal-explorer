@@ -48,7 +48,8 @@ function createPerformanceMonitorFolder(parentPane) {
     
     // FPS monitor
     bindingState.currentFPS = 60.0;
-    perfFolder.addMonitor(bindingState, 'currentFPS', {
+    perfFolder.addBinding(bindingState, 'currentFPS', {
+        readonly: true,
         label: 'FPS',
         view: 'graph',
         min: 0,
@@ -56,12 +57,14 @@ function createPerformanceMonitorFolder(parentPane) {
     });
     
     // Iteration count monitor
-    perfFolder.addMonitor(qualitySettings, 'maxIter', {
+    perfFolder.addBinding(qualitySettings, 'maxIter', {
+        readonly: true,
         label: 'Iterations'
     });
     
     // Camera velocity monitor
-    perfFolder.addMonitor(bindingState, 'cameraVelocity', {
+    perfFolder.addBinding(bindingState, 'cameraVelocity', {
+        readonly: true,
         label: 'Camera Velocity',
         view: 'graph',
         min: -0.1,
@@ -79,29 +82,35 @@ function createParameterMonitorFolder(parentPane) {
     });
     
     // Fractal parameters (read-only display)
-    paramFolder.addMonitor(fractalState.params, 'x', {
+    paramFolder.addBinding(fractalState.params, 'x', {
+        readonly: true,
         label: 'c.x'
     });
     
-    paramFolder.addMonitor(fractalState.params, 'y', {
+    paramFolder.addBinding(fractalState.params, 'y', {
+        readonly: true,
         label: 'c.y'
     });
     
-    paramFolder.addMonitor(fractalState.params, 'z', {
+    paramFolder.addBinding(fractalState.params, 'z', {
+        readonly: true,
         label: 'c.z'
     });
     
-    paramFolder.addMonitor(fractalState.params, 'w', {
+    paramFolder.addBinding(fractalState.params, 'w', {
+        readonly: true,
         label: 'c.w'
     });
     
     // Slice information
-    paramFolder.addMonitor(fractalState, 'sliceValue', {
+    paramFolder.addBinding(fractalState, 'sliceValue', {
+        readonly: true,
         label: '4D Slice'
     });
     
     // Camera information
-    paramFolder.addMonitor(cameraState, 'focalLength', {
+    paramFolder.addBinding(cameraState, 'focalLength', {
+        readonly: true,
         label: 'Focal Length'
     });
 }
@@ -116,25 +125,29 @@ function createSystemStatusFolder(parentPane) {
     });
     
     // Application state
-    statusFolder.addMonitor(bindingState, 'appStatus', {
+    statusFolder.addBinding(bindingState, 'appStatus', {
+        readonly: true,
         label: 'App Status',
         view: 'text'
     });
     
     // Animation state
-    statusFolder.addMonitor(bindingState, 'animationStatus', {
+    statusFolder.addBinding(bindingState, 'animationStatus', {
+        readonly: true,
         label: 'Animation',
         view: 'text'
     });
     
     // Recording state (using different property name to avoid conflict)
-    statusFolder.addMonitor(bindingState, 'recordingStatusMonitor', {
+    statusFolder.addBinding(bindingState, 'recordingStatusMonitor', {
+        readonly: true,
         label: 'Recording',
         view: 'text'
     });
     
     // Active effects summary
-    statusFolder.addMonitor(bindingState, 'activeEffects', {
+    statusFolder.addBinding(bindingState, 'activeEffects', {
+        readonly: true,
         label: 'Active Effects',
         view: 'text'
     });

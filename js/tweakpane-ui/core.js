@@ -5,6 +5,7 @@
  * @module tweakpane-ui/core
  */
 
+import { Pane } from '../lib/tweakpane.min.js';
 import { CONFIG } from '../config.js';
 import { 
     colorSettings, 
@@ -88,11 +89,7 @@ export function initTweakpane() {
     // Exit if already initialized
     if (pane) return;
     
-    // Load Tweakpane from global scope (CDN)
-    if (typeof Tweakpane === 'undefined') {
-        console.error('Tweakpane is not loaded. Make sure to include it in your HTML.');
-        return;
-    }
+    // Tweakpane is now imported as ES6 module
     
     // Initialize the multi-pane layout
     if (!initializePaneLayout()) {

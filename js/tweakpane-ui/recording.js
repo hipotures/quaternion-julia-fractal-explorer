@@ -60,7 +60,7 @@ function createVideoRecordingControls() {
         value: getRecordingQualityIndex()
     };
     
-    videoFolder.addInput(bindingState.recordingQuality, 'value', {
+    videoFolder.addBinding(bindingState.recordingQuality, 'value', {
         label: 'Quality (Q)',
         options: {
             'Normal (5 Mbps)': 0,
@@ -80,7 +80,8 @@ function createVideoRecordingControls() {
     });
     
     // Recording status display
-    videoFolder.addMonitor(bindingState, 'recordingStatus', {
+    videoFolder.addBinding(bindingState, 'recordingStatus', {
+        readonly: true,
         label: 'Status',
         view: 'text'
     });
@@ -117,7 +118,7 @@ function createScreenshotControls() {
             formatOptions[format.toUpperCase()] = index;
         });
         
-        screenshotFolder.addInput(bindingState.screenshotFormat, 'value', {
+        screenshotFolder.addBinding(bindingState.screenshotFormat, 'value', {
             label: 'Format',
             options: formatOptions
         });

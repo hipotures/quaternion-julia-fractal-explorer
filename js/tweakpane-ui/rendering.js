@@ -24,7 +24,7 @@ export function createRenderingFolder(targetPane = null) {
     });
     
     // Iteration control
-    folders.rendering.addInput(qualitySettings, 'maxIter', {
+    folders.rendering.addBinding(qualitySettings, 'maxIter', {
         label: 'Iterations (1/2)',
         min: CONFIG.FRACTAL.MIN_ITER, 
         max: CONFIG.FRACTAL.MAX_ITER,
@@ -37,31 +37,31 @@ export function createRenderingFolder(targetPane = null) {
     });
     
     // Feature toggles
-    folders.rendering.addInput(qualitySettings, 'enableShadows', {
+    folders.rendering.addBinding(qualitySettings, 'enableShadows', {
         label: 'Shadows (3)'
     }).on('change', () => {
         updateQualityUniforms(qualitySettings);
     });
     
-    folders.rendering.addInput(qualitySettings, 'enableAO', {
+    folders.rendering.addBinding(qualitySettings, 'enableAO', {
         label: 'Ambient Occlusion (4)'
     }).on('change', () => {
         updateQualityUniforms(qualitySettings);
     });
     
-    folders.rendering.addInput(qualitySettings, 'enableSmoothColor', {
+    folders.rendering.addBinding(qualitySettings, 'enableSmoothColor', {
         label: 'Smooth Colors (5)'
     }).on('change', () => {
         updateQualityUniforms(qualitySettings);
     });
     
-    folders.rendering.addInput(qualitySettings, 'enableSpecular', {
+    folders.rendering.addBinding(qualitySettings, 'enableSpecular', {
         label: 'Specular (7)'
     }).on('change', () => {
         updateQualityUniforms(qualitySettings);
     });
     
-    folders.rendering.addInput(qualitySettings, 'enableAdaptiveSteps', {
+    folders.rendering.addBinding(qualitySettings, 'enableAdaptiveSteps', {
         label: 'Adaptive Steps (8)'
     }).on('change', () => {
         updateQualityUniforms(qualitySettings);

@@ -179,7 +179,8 @@ function createTourControlsFolder(parentPane) {
     });
     
     // Tour status monitor
-    tourFolder.addMonitor(bindingState, 'tourStatus', {
+    tourFolder.addBinding(bindingState, 'tourStatus', {
+        readonly: true,
         label: 'Tour Status',
         view: 'text'
     });
@@ -244,7 +245,10 @@ function showQuaternionPresetMenu() {
         });
         item.addEventListener('click', () => {
             loadQuaternionPreset(index);
-            document.body.removeChild(menu);
+            // Check if menu is still in DOM before removing
+            if (menu.parentNode === document.body) {
+                document.body.removeChild(menu);
+            }
         });
         
         menu.appendChild(item);
@@ -265,7 +269,10 @@ function showQuaternionPresetMenu() {
     // Close menu when clicking outside
     const closeMenu = (e) => {
         if (!menu.contains(e.target)) {
-            document.body.removeChild(menu);
+            // Check if menu is still in DOM before removing
+            if (menu.parentNode === document.body) {
+                document.body.removeChild(menu);
+            }
             document.removeEventListener('click', closeMenu);
         }
     };
@@ -311,7 +318,10 @@ function showTourPresetMenu(tours) {
         });
         item.addEventListener('click', () => {
             startTourPlayback(tour.data);
-            document.body.removeChild(menu);
+            // Check if menu is still in DOM before removing
+            if (menu.parentNode === document.body) {
+                document.body.removeChild(menu);
+            }
         });
         
         menu.appendChild(item);
@@ -332,7 +342,10 @@ function showTourPresetMenu(tours) {
     // Close menu when clicking outside
     const closeMenu = (e) => {
         if (!menu.contains(e.target)) {
-            document.body.removeChild(menu);
+            // Check if menu is still in DOM before removing
+            if (menu.parentNode === document.body) {
+                document.body.removeChild(menu);
+            }
             document.removeEventListener('click', closeMenu);
         }
     };

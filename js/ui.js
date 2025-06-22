@@ -5,6 +5,7 @@
  * @module ui
  */
 
+import * as THREE from './lib/three.module.min.js';
 import { cameraState, startTargetAnimation } from './camera.js';
 import { 
     fractalState, 
@@ -423,9 +424,9 @@ function initTourButtons() {
 
 // Initialize UI elements
 
-// Initial setup - ensure menu is visible by default
+// Initial setup - hide legacy menu by default (use Tweakpane instead)
 if (menuElement) {
-    menuElement.style.display = 'block';
+    menuElement.style.display = 'none';
 }
 
 // Initial setup - ensure stats are visible by default

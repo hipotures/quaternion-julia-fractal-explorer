@@ -11,7 +11,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // --- Fullscreen Quad ---
-const geometry = new THREE.PlaneBufferGeometry(2, 2);
+const geometry = new THREE.PlaneGeometry(2, 2);
 const material = new THREE.ShaderMaterial({
     uniforms: uniforms, // Use centrally managed uniforms
     vertexShader,

@@ -5,6 +5,7 @@
  * @module tweakpane-ui/layout
  */
 
+import { Pane } from '../lib/tweakpane.min.js';
 import { CONFIG } from '../config.js';
 import { bindingState } from './core.js';
 
@@ -49,7 +50,7 @@ export function createMainPane() {
     }
     
     // Create the main pane
-    mainPane = new Tweakpane.Pane({
+    mainPane = new Pane({
         title: 'Controls',
         expanded: true,
         container: mainContainer
@@ -86,7 +87,7 @@ export function createParametersPane() {
     }
     
     // Create the parameters pane
-    parametersPane = new Tweakpane.Pane({
+    parametersPane = new Pane({
         title: 'Parameters Monitor',
         expanded: true,
         container: parametersContainer
@@ -125,7 +126,7 @@ export function createPresetsPane() {
     }
     
     // Create the presets pane (collapsed by default)
-    presetsPane = new Tweakpane.Pane({
+    presetsPane = new Pane({
         title: 'Presets & Tours',
         expanded: false, // Collapsed by default as requested
         container: presetsContainer
@@ -138,11 +139,7 @@ export function createPresetsPane() {
  * Initialize all pane containers
  */
 export function initializePaneLayout() {
-    // Load Tweakpane from global scope (CDN)
-    if (typeof Tweakpane === 'undefined') {
-        console.error('Tweakpane is not loaded. Make sure to include it in your HTML.');
-        return false;
-    }
+    // Tweakpane is now imported as ES6 module
     
     // Create all panes
     createMainPane();

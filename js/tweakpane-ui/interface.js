@@ -61,7 +61,7 @@ function createPanelControlsFolder() {
     
     // Tweakpane auto-collapse toggle
     bindingState.autoCollapse = { value: false };
-    panelFolder.addInput(bindingState.autoCollapse, 'value', {
+    panelFolder.addBinding(bindingState.autoCollapse, 'value', {
         label: 'Auto-collapse panels'
     }).on('change', (ev) => {
         // Implementation for auto-collapse behavior
@@ -88,7 +88,7 @@ function createLegacyMenuFolder() {
     });
     
     // Legacy menu visibility toggle
-    legacyFolder.addInput(bindingState.showLegacyMenu, 'value', {
+    legacyFolder.addBinding(bindingState.showLegacyMenu, 'value', {
         label: 'Show Legacy Menu (Left)'
     }).on('change', (ev) => {
         const menuElement = document.getElementById('menu');
@@ -98,7 +98,7 @@ function createLegacyMenuFolder() {
     });
     
     // Legacy preset menu toggle
-    legacyFolder.addInput(bindingState.showLegacyPresets, 'value', {
+    legacyFolder.addBinding(bindingState.showLegacyPresets, 'value', {
         label: 'Show Legacy Presets (Top)'
     }).on('change', (ev) => {
         const presetMenuElement = document.getElementById('preset-menu');
@@ -108,7 +108,7 @@ function createLegacyMenuFolder() {
     });
     
     // Legacy stats panel toggle
-    legacyFolder.addInput(bindingState.showLegacyStats, 'value', {
+    legacyFolder.addBinding(bindingState.showLegacyStats, 'value', {
         label: 'Show Legacy Stats (Right)'
     }).on('change', (ev) => {
         const statsElement = document.getElementById('stats');

@@ -25,36 +25,49 @@ import { pane, folders, bindingState } from './core.js';
  */
 export function createFractalParametersFolder(targetPane = null) {
     const usePane = targetPane || pane;
+    console.log('usePane:', usePane);
+    console.log('usePane methods:', Object.getOwnPropertyNames(usePane.__proto__));
     
     // Create main folder
-    folders.fractal = usePane.addFolder({
-        title: 'Fractal Parameters',
-        expanded: true
-    });
+    try {
+        folders.fractal = usePane.addFolder({
+            title: 'Fractal Parameters',
+            expanded: true
+        });
+        console.log('folders.fractal created:', folders.fractal);
+        console.log('folders.fractal methods:', Object.getOwnPropertyNames(folders.fractal.__proto__));
+    } catch (error) {
+        console.error('Failed to create folder:', error);
+        return;
+    }
     
-    // Parameter c controls (quaternion components)
-    folders.fractal.addInput(fractalState.params, 'x', { 
+    // Test - create simple object first
+    const testParams = { x: fractalState.params.x };
+    
+    // Tweakpane v4 API - use addBinding instead of addInput
+    folders.fractal.addBinding(testParams, 'x', { 
         min: -1, max: 1, step: 0.01, 
         label: 'c.x'
     }).on('change', () => {
+        fractalState.params.x = testParams.x;
         updateFractalParamsUniform(fractalState.params);
     });
     
-    folders.fractal.addInput(fractalState.params, 'y', { 
+    folders.fractal.addBinding(fractalState.params, 'y', { 
         min: -1, max: 1, step: 0.01, 
         label: 'c.y'
     }).on('change', () => {
         updateFractalParamsUniform(fractalState.params);
     });
     
-    folders.fractal.addInput(fractalState.params, 'z', { 
+    folders.fractal.addBinding(fractalState.params, 'z', { 
         min: -1, max: 1, step: 0.01, 
         label: 'c.z'
     }).on('change', () => {
         updateFractalParamsUniform(fractalState.params);
     });
     
-    folders.fractal.addInput(fractalState.params, 'w', { 
+    folders.fractal.addBinding(fractalState.params, 'w', { 
         min: -1, max: 1, step: 0.01, 
         label: 'c.w'
     }).on('change', () => {
@@ -87,13 +100,13 @@ function createSliceControlsFolder() {
         expanded: true
     });
     
-    sliceFolder.addInput(fractalState, 'animateSlice', {
+    sliceFolder.addBinding(fractalState, 'animateSlice', {
         label: 'Animate Slice (0)'
     }).on('change', () => {
         // No need to call toggleSliceAnimation() as we're directly modifying the state
     });
     
-    sliceFolder.addInput(fractalState, 'sliceAmplitude', { 
+    sliceFolder.addBinding(fractalState, 'sliceAmplitude', { 
         min: 0.1, max: 1.0, step: 0.1,
         label: 'Amplitude (< >)'
     }).on('change', () => {
@@ -114,7 +127,7 @@ function createCrossSectionFolder() {
     // Bind a number for clip mode for the UI
     bindingState.clipModeSelector.value = crossSectionSettings.clipMode;
     
-    crossSectionFolder.addInput(bindingState.clipModeSelector, 'value', {
+    crossSectionFolder.addBinding(bindingState.clipModeSelector, 'value', {
         label: 'Mode (9)',
         options: {
             'OFF': 0,
@@ -127,7 +140,7 @@ function createCrossSectionFolder() {
         updateClipModeUniform(ev.value);
     });
     
-    crossSectionFolder.addInput(crossSectionSettings, 'clipDistance', {
+    crossSectionFolder.addBinding(crossSectionSettings, 'clipDistance', {
         label: 'Distance ([ ])',
         min: 0.2, max: 10.0, step: 0.1
     }).on('change', (ev) => {

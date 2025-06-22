@@ -50,7 +50,7 @@ function createColorPaletteSelector() {
     // Initialize UI binding
     bindingState.paletteSelector.value = colorSettings.paletteIndex;
     
-    folders.color.addInput(bindingState.paletteSelector, 'value', {
+    folders.color.addBinding(bindingState.paletteSelector, 'value', {
         label: 'Palette (6)',
         options: {
             'OFF': 0,
@@ -85,41 +85,41 @@ function createDynamicColorsFolder() {
         expanded: true
     });
     
-    dynamicColors.addInput(colorDynamicsSettings, 'animationEnabled', {
+    dynamicColors.addBinding(colorDynamicsSettings, 'animationEnabled', {
         label: 'Animate Colors (C)'
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
-    dynamicColors.addInput(colorDynamicsSettings, 'saturation', {
+    dynamicColors.addBinding(colorDynamicsSettings, 'saturation', {
         label: 'Saturation (S)',
         min: 0.0, max: 2.0, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
-    dynamicColors.addInput(colorDynamicsSettings, 'brightness', {
+    dynamicColors.addBinding(colorDynamicsSettings, 'brightness', {
         label: 'Brightness (B)',
         min: 0.0, max: 2.0, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
-    dynamicColors.addInput(colorDynamicsSettings, 'contrast', {
+    dynamicColors.addBinding(colorDynamicsSettings, 'contrast', {
         label: 'Contrast (N)',
         min: 0.0, max: 2.0, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
-    dynamicColors.addInput(colorDynamicsSettings, 'phaseShift', {
+    dynamicColors.addBinding(colorDynamicsSettings, 'phaseShift', {
         label: 'Phase Shift (P)',
         min: 0.0, max: 6.28, step: 0.1
     }).on('change', () => {
         updateColorDynamicsUniforms(colorDynamicsSettings);
     });
     
-    dynamicColors.addInput(colorDynamicsSettings, 'animationSpeed', {
+    dynamicColors.addBinding(colorDynamicsSettings, 'animationSpeed', {
         label: 'Anim Speed (A)',
         min: 0.05, max: 2.0, step: 0.05
     }).on('change', () => {
@@ -136,7 +136,7 @@ function createOrbitTrapFolder() {
         expanded: true
     });
     
-    orbitTrap.addInput(orbitTrapSettings, 'enabled', {
+    orbitTrap.addBinding(orbitTrapSettings, 'enabled', {
         label: 'Enable Orbit Trap'
     }).on('change', () => {
         // Disable physics-based if orbit trap is enabled (they are exclusive)
@@ -154,7 +154,7 @@ function createOrbitTrapFolder() {
     // Initialize binding
     bindingState.orbitTrapTypeSelector.value = orbitTrapSettings.type;
     
-    orbitTrap.addInput(bindingState.orbitTrapTypeSelector, 'value', {
+    orbitTrap.addBinding(bindingState.orbitTrapTypeSelector, 'value', {
         label: 'Trap Type (T)',
         options: {
             'Circle': 0,
@@ -167,14 +167,14 @@ function createOrbitTrapFolder() {
         updateOrbitTrapUniforms(orbitTrapSettings);
     });
     
-    orbitTrap.addInput(orbitTrapSettings, 'radius', {
+    orbitTrap.addBinding(orbitTrapSettings, 'radius', {
         label: 'Radius (R)',
         min: 0.1, max: 5.0, step: 0.1
     }).on('change', () => {
         updateOrbitTrapUniforms(orbitTrapSettings);
     });
     
-    orbitTrap.addInput(orbitTrapSettings, 'intensity', {
+    orbitTrap.addBinding(orbitTrapSettings, 'intensity', {
         label: 'Intensity (I)',
         min: 0.1, max: 5.0, step: 0.1
     }).on('change', () => {
@@ -191,7 +191,7 @@ function createPhysicsColorsFolder() {
         expanded: true
     });
     
-    physics.addInput(physicsColorSettings, 'enabled', {
+    physics.addBinding(physicsColorSettings, 'enabled', {
         label: 'Enable Physics Colors'
     }).on('change', () => {
         // Disable orbit trap if physics is enabled (they are exclusive)
@@ -209,7 +209,7 @@ function createPhysicsColorsFolder() {
     // Initialize binding
     bindingState.physicsColorTypeSelector.value = physicsColorSettings.type;
     
-    physics.addInput(bindingState.physicsColorTypeSelector, 'value', {
+    physics.addBinding(bindingState.physicsColorTypeSelector, 'value', {
         label: 'Effect Type (Y)',
         options: {
             'Diffraction': 0,
@@ -221,28 +221,28 @@ function createPhysicsColorsFolder() {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
-    physics.addInput(physicsColorSettings, 'frequency', {
+    physics.addBinding(physicsColorSettings, 'frequency', {
         label: 'Frequency (Q)',
         min: 0.1, max: 5.0, step: 0.1
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
-    physics.addInput(physicsColorSettings, 'waves', {
+    physics.addBinding(physicsColorSettings, 'waves', {
         label: 'Waves (W)',
         min: 1.0, max: 20.0, step: 0.5
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
-    physics.addInput(physicsColorSettings, 'intensity', {
+    physics.addBinding(physicsColorSettings, 'intensity', {
         label: 'Intensity (E)',
         min: 0.1, max: 2.0, step: 0.1
     }).on('change', () => {
         updatePhysicsColorUniforms(physicsColorSettings);
     });
     
-    physics.addInput(physicsColorSettings, 'balance', {
+    physics.addBinding(physicsColorSettings, 'balance', {
         label: 'Balance (D)',
         min: 0.0, max: 1.0, step: 0.05
     }).on('change', () => {
